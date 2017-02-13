@@ -22,8 +22,8 @@ $MapSizeX=13;
 $MapSizeY=7;
 $MapEdgeX="9";
 $MapEdgeY="J";
-$MapHigh=20;
-$MapWide=28;
+$MapHigh=($MapSizeY+1)*2;#20
+$MapWide=($MapSizeX+1)*2;#28
 
 $cstamp=time();
 $estamp=$cstamp+60;
