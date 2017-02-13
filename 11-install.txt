@@ -1,0 +1,30 @@
+
+Queville v11.0, Land of the Dragon Basher
+Quintrix and Crew Software
+
+Released as Creative Commons BY-NC, where 
+'non-commercial' includes games created meaning
+games cannot have money, coins, bank notes,
+credits, or any other economic system. See license.txt
+for full credits.
+
+http://creativecommons.org/licenses/by-nc/2.0/
+
+
+
+Step 1: unzip the '11-dragon' directory as a sub-directory of your cgi-bin
+            directory.
+
+Step 2: CHMOD the files "11-dragon.cgi" and "11-sysop.cgi" to give them
+            execute permissions. 
+
+Step 3: Unzip the "11-gfx.zip" file into your public_html folder
+
+Step 4: edit config settings in the file "11-config.pl". The $datadir should
+            be below your public_html directory; if it does not exist, the script
+            will attempt to create it and CHMOD it to 777 for write access.  
+
+Step 5: load the 11-sysop.cgi script into your web browser to install a demo
+            server. After the install, click the "login" link to login to your server.
+            You can install as many servers as your hardware allows by running
+            the 11-sysop.cgi script again and giving the new server a unique name.   
