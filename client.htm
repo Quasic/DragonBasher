@@ -1,6 +1,4 @@
-<html>
-<head>
-<title>Dragon Client</title>
+<html><head><title>Dragon Client</title>
 <script src="[htmlurl]/jquery-1.11.2.min.js" language="JavaScript"></script>
 <script language="JavaScript">
 
@@ -76,7 +74,7 @@ a:active{color:red}
 <img id=MH name=MH src="[htmlurl]/11-gfx/Cursor.gif">
 <noscript><font color="white" style="color:white;background-color:black">Please allow this site to use JavaScript so you can play this game. (This setting is usually in your browser preferences.)</font></noscript>
 <script language="JavaScript">
-///////when splitting, check for [htmlurl]
+
 RefRPG=0;
 
 servers=new Array();
@@ -187,7 +185,7 @@ scroller=$($.parseHTML("<DIV />"))
 .appendTo(document.body);
 
 //map
-if(typeof Tileset=="undefined"){Tileset=(function(){var r="",i,m=["G6","G4","G1","G3","O6","R4"];for(i=0;i<1120;i++){r+=m[Math.floor(Math.random()*100)]||"G0";}return[r.substring(0,280),r.substring(280,560),r.substring(560,840),r.substring(840,1120)];})();}
+if(typeof Tileset=="undefined"){Tileset=(function(){var r="",i,m=["Gg","Ge","Gb","Gd","Og","Re"];for(i=0;i<1120;i++){r+=m[Math.floor(Math.random()*100)]||"Ga";}return[r.substring(0,280),r.substring(280,560),r.substring(560,840),r.substring(840,1120)];})();}
 screenV=SetTiles(0,1,Tileset[2]);
 screenW=SetTiles(1,1,Tileset[3]);//reverse order to avoid IE zindex issues
 screenT=SetTiles(0,0,Tileset[0]);
@@ -351,14 +349,6 @@ function ClickHere(z,T){//forget T if using client 4-screen view z-location, oth
    }
   }
   
-
-
-
-
-
-
-
-
 
   // if not, then move player
   if(m.length){
@@ -745,7 +735,7 @@ function ClickInven(a){
   Game=Game+" border=1>&nbsp;<p>";
 
   if (MenuItem>="A0" && MenuItem<="Kz") {
-    Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\';">Drop '+ItemID(MenuItem)+'</a><br>';
+    Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>';
   }
   if (MenuItem==isMod.key) { // sysop key menu
     //
@@ -787,9 +777,8 @@ function ClickInven(a){
   if (MenuItem=="Za"&&isMod(1)){
     Game+='<a href="javascript:CreateItem(\''+MenuSlot+'\')">Create Item</a>';
   }
-
+  if (MenuItem=="Zj"){ Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>'; }
   PopAlign="char"; POP(Game);
-
 }
 
 function SetMode() {
@@ -1229,7 +1218,7 @@ function DecodeKey(i) {
   }
 }
 function clog(html,e){if(typeof e!="object"){e=$("#"+e,parent.document)[0];}else{if(e.constructor==$){e=e[0];}}var c=html.replace(/\^([A-Z][0-9a-z]|[A-Z][A-Z][A-Z]+)/g,function(f,i){return i.length<3?'<img title="'+ItemID(i)+'" src="'+DirItem+'/O'+i+'.gif" />':'<img title="'+i.charAt(0)+i.substring(1).toLowerCase()+'" src="'+DirBuild+'/'+i+'.gif" />';});if(e){var h=e.scrollHeight-e.scrollTop-e.clientHeight;while(e.childNodes.length>120){while((e.firstChild.tagName||'')!="BR"){e.removeChild(e.firstChild);}e.removeChild(e.firstChild);}e.innerHTML+=c+"<BR>";if(h<16){e.scrollTop=e.scrollHeight-e.clientHeight;}ScrollbarUpdate();}return c;}
-function cinput(b){showtab.chatinput.html(CharName+":&nbsp;"+ChatLine.replace(/ /g,"&nbsp;").replace(/\^([A-Z][0-9a-z])/g,'<img style="height:1.25em;vertical-align:top" src="'+DirItem+'/O$1.gif">').replace(/\^([A-Z][A-Z][A-Z]+)/g,'<img style="height:1.25em;vertical-align:top" src="'+DirBuild+'/$1.gif" />')+"<img id=cursor name=cursor src=\""+DirTile+"/Q5.png\" height=18 width=10 style=\"position:absolute; \"></font></b>"+(b?'&nbsp;&nbsp;<i>'+(b+'').replace(/ /g,"&nbsp;")+'</i>':""));}
+function cinput(b){showtab.chatinput.html(CharName+":&nbsp;"+ChatLine.replace(/ /g,"&nbsp;").replace(/\^([A-Z][0-9a-z])/g,'<img style="height:1.25em;vertical-align:top" src="'+DirItem+'/O$1.gif">').replace(/\^([A-Z][A-Z][A-Z]+)/g,'<img style="height:1.25em;vertical-align:top" src="'+DirBuild+'/$1.gif" />')+"<img id=cursor name=cursor src=\""+DirTile+"/Qf.png\" height=18 width=10 style=\"position:absolute; \"></font></b>"+(b?'&nbsp;&nbsp;<i>'+(b+'').replace(/ /g,"&nbsp;")+'</i>':""));}
 function LoadChat(a,b){
   if(!NewChatLine){NewChatLine=ChatLine;}
   ChatLine=a;cinput(b);
@@ -1576,13 +1565,30 @@ function AddStatic(a) {
     ToDo="add&j="+a;
   } else {
     Game=Game+"<a href=\"javascript:LoadChat('/add ^','[itemid] [new item lifetime]')\">/add ...</a><br>";
+    Game=Game+"<a href=javascript:AddPier('');>Add Pier</a><br>";
     Game=Game+"<a href=javascript:AddStatic('CITY');>CITY</a><br>";
     Game=Game+"<a href=javascript:AddStatic('DOOR');>DOOR</a><br>";
     Game=Game+"<a href=javascript:AddStatic('TPORT');>TPORT</a><br>";
     Game=Game+"<a href=javascript:AddStatic('CART');>CART</a><br>";
     Game=Game+"<a href=javascript:AddStatic('FOUNTAIN');>FOUNTAIN</a><br>";
     Game=Game+"<a href=javascript:AddStatic('Sa-300');>"+ItemID("Sa")+"</a><br>";
+  }
+  POP(Game);
+}
 
+function AddPier(a) {
+  Game="<center><p><font color=#006000><b>Add Static Item:</b></font><p>";
+  if (a) {
+    ToDo="add&j=Zg-"+a;
+    Game=Game+"Adding Pier with "+ItemID(a)+"...";  
+  } else {
+    Game=Game+"Select Fish To Catch:<p>";
+    // add hover alt tag with ItemID here maybe??
+    for (i=97;i<113;i++) {
+      Game=Game+"<a href=\"javascript:AddPier('G"+String.fromCharCode(i)+"');\"><img src=\""+DirItem+"/OG"+String.fromCharCode(i)+".gif\" height=32 width=32></a> ";
+      if (i==104) { Game=Game+"<br>"; }
+    }
+    Game=Game+"<p><a href=\"javascript:AddPier('GZa');\">Nothing</a><p>";
   }
   POP(Game);
 }
@@ -1653,6 +1659,24 @@ function NPCKing(a) {
   }
   POVER(Game);
 }
+
+function NPCJoe(a) {
+  Game="<center><p><font color=#006000><b>Joe:</b></font><p>";
+  if (a==1) {
+    Game=Game+"The computer with my Queville<br>source code crashed so I am moving it<br>to the new Dragon Basher game engine.<p>";
+    Game=Game+"It will be an entierly differnt game here.";
+    Game=Game+"<p><a href='javascript:NPCJoe(2);'>How so??</a><p>";
+  } else {
+    if (a==2) {
+      Game=Game+"It will be bigger,<br>better,and more fun. : )<p>";
+    } else {
+      Game=Game+"Hey there player!<p>Welcome to Queville,<br>home of the Dragon Basher.";
+      Game=Game+"<p><a href='javascript:NPCJoe(1);'>What is going on here??</a><p>";
+    }
+  }
+}
+
+
 
 //Map-menu
 function MenuID(a) { switch (a) {

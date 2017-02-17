@@ -1,4 +1,4 @@
-# external, add static object
+# external, add or delete static object
 $version="1.0";
 
 if ($player{'inven'}=~/Zd/) {
@@ -7,8 +7,24 @@ if ($player{'inven'}=~/Zd/) {
   # $form{'j'}=~s/[^A-Za-z0-9]//g; if (length($form{'j'}<>2) { $form{'j'}=""; }
   if (!-d "$datadir/static/$player{'tmap'}") { mkdir "$datadir/static/$player{'tmap'}"; }
   if (!-w "$datadir/static/$player{'tmap'}") { chmod 0777, "$datadir/static/$player{'tmap'}" }
-  ($j,$estamp)=split(/\-/, $form{'j'});
-  $estamp=sprintf("%08x", $estamp);
+  ($j,$data)=split(/\-/, $form{'j'});
+  $estamp=sprintf("%08x", 0);
+  if (length($j)==2) {
+    if (substr($j,0,1) ne "Z") {
+      $estamp=sprintf("%08x", $data);
+      $data=$player{'name'};
+    } else {
+      if ($j eq "Zf") { $data=substr($form{'j'},2); $data=~s/\-/ /g; }
+    }
+  } else {
+    if (substr($item,0,3) eq "NPC") {
+      ## npc
+    } else {
+      if ($j) {
+        ## building
+      }
+    }  
+  }
   if ($j) {
     # go through directory, delete item on z-location
     opendir(DIR, "$datadir/static/$player{'tmap'}");
@@ -29,7 +45,7 @@ if ($player{'inven'}=~/Zd/) {
       if (!-d "$datadir/static/$player{'tmap'}") { mkdir "$datadir/static/$player{'tmap'}"; }
       if (!-w "$datadir/static/$player{'tmap'}") { chmod 0777, "$datadir/static/$player{'tmap'}" }
       open (FILE, ">$datadir/static/$player{'tmap'}/$j $estamp $player{'tz'}.txt");
-      print FILE "$player{'name'}"; ## store $form {'k'} here??
+      print FILE "$data\n";
       close FILE;
       print "pop=$j Added.\n";
     }  

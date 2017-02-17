@@ -1,6 +1,5 @@
 # external, execute static object
 $version="1.0";
-print "pop=static\n";
 opendir(DIR,"$datadir/static/$player{'tmap'}"); @static=readdir(DIR); closedir(DIR);
 foreach $line (@static) {
   chomp($line); $line=~s/.txt//;
@@ -8,14 +7,23 @@ foreach $line (@static) {
   ($item,$expires,$itemz)=split(/ /, $line);
   if ($itemz eq $player{'tz'}) {
     if (length($item)==2) {
-      $f=index($player{'inven'}, "Za");
-      # converts filestamp to decimal, add cstamp, convert back to hex
-      $estamp=sprintf("%d", hex($expires));
-      $estamp=$cstamp+$estamp;
-      $estamp=sprintf("%08x", $estamp);
-      $player{'inven'}=substr($player{'inven'},0,$f).$item.$estamp.substr($player{'inven'},$f+10);
-      do 'inv.pl';#print "inv=$player{'inven'}\n";
-      print "dinv=1v\n";
+      if (substr($item,0,1) eq "Z") {
+        ## special items such as fire pits
+        ## do another check for y items
+        if ($item eq "Zf") { do "static-Zf.pl"; } # sign
+        if ($item eq "Zg") { do "static-Zg.pl"; } # pier
+        if ($item eq "Zh") { do "static-Zh.pl"; } # city
+        if ($item eq "Zi") { do "static-Zi.pl"; } # fire pit
+        if ($item eq "Zj") { do "static-Zj.pl"; } # fire
+      } else {
+        $f=index($player{'inven'}, "Za");
+        # converts filestamp to decimal, add cstamp, convert back to hex
+        $estamp=sprintf("%d", hex($expires));
+        $estamp=$cstamp+$estamp;
+        $estamp=sprintf("%08x", $estamp);
+        $player{'inven'}=substr($player{'inven'},0,$f).$item.$estamp.substr($player{'inven'},$f+10);
+        do 'inv.pl'; print "dinv=1v\n";
+      }
     } else {
       if (substr($item,0,3) eq "NPC") {
         ## npc
