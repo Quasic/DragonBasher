@@ -13,7 +13,8 @@
 #
 # need to add a check to make sure created player name does
 # not start with the letters npc
-# 
+#
+ 
 use CGI::Carp qw( fatalsToBrowser );
 $| = -1;
 require "11-config.pl";
@@ -40,6 +41,7 @@ if ($form{'c'} eq "external.js") {
 $form{'s'}=~s/[^A-Za-z0-9\-]//g;
 $form{'c'}=~s/[^A-Za-z0-9\-]//g;
 $form{'j'}=~s/[^A-Za-z0-9 -]//g;
+$form{'k'}=~s/[^A-Za-z0-9 -]//g;
 $form{'d'}=~s/[^A-Za-z0-9]//g;
 $form{'m'}=~s/[^A-Za-z0-9]//g;
 
