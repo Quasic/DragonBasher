@@ -729,12 +729,10 @@ function ClickInven(a){
   Wearing=isWearing(MenuItem);
   Game="<p>&nbsp;"+ItemID(MenuItem)+"&nbsp;<p>";
   Game=Game+"&nbsp;<img src=\""+DirItem+"/O"+MenuItem+".gif\" height=32 width=32 onmousedown=\"DistplayInven();\" ";
-  if (Wearing) {
-    Game=Game+" style=\"background-color: #80FF80; \"; ";
-  } else {
-    Game=Game+" style=\"background-color: #ffffd0; \"; ";
-  }
-  Game=Game+" border=1>&nbsp;<p>";
+  bg="#ffffd0";
+  if (MenuItem==Bait) { bg="#80FF80"; }
+  if (Wearing) { bg="#80FF80"; }
+  Game=Game+" style=\"background-color: "+bg+";\" border=1>&nbsp;<p>";
 
   if (MenuItem>="A0" && MenuItem<="Kz") {
     Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>';
@@ -757,11 +755,16 @@ function ClickInven(a){
   }
   
   if (MenuItem>="Ga" && MenuItem<="Gz") {
+    Game=Game+'<a href="javascript:Cook(\''+MenuItem+'\');">Cook '+ItemID(MenuItem)+'</a><br>';
     if (MenuItem==Bait) {
       Game=Game+'<a href="javascript:ClickBait(0);">Using As Bait</a><br>';
     } else {
       Game=Game+'<a href="javascript:ClickBait(\''+MenuItem+'\');">Use As Bait</a><br>';
     }
+  }
+
+  if (MenuItem>="Ja" && MenuItem<="Jz") {
+    Game=Game+'<a href="javascript:Eat(\''+MenuItem+'\');">Eat '+ItemID(MenuItem)+'</a><br>';
   }
     
   if (MenuItem>="La" && MenuItem<="Sz") {
@@ -803,6 +806,20 @@ function SetFill() {
     TileFill=Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1);
     POP("Now in tile fill mode - "+TileFill);
   }
+}
+
+function Cook(a) {
+  ToDo="cook&j="+a;
+  POP("Cooking "+ItemID(a)+"...");
+}
+
+function Eat(a) {
+  ToDo="eat&j="+a;
+  POP("Eating "+ItemID(a)+"...");
+}
+
+function Match(a) {
+  
 }
 
 function CreateItem(a){
@@ -1481,22 +1498,16 @@ function POP(a,align) {
 
 //view-menu
 function DisplayInven() {
-	var t,o={};
+  var t,o={},p={};
   SB="<p align=center>";
   for (i=0;i<NumInven;i++) {
     t=CharInven.substring(i*2,i*2+2);
     SB=SB+"&nbsp;<img id=\"Inv"+i+"\" src=\""+DirItem+"/O"+t+".gif\" height=32 width=32 ";
     SB=SB+"onmousedown=\"ClickInven(\'"+i+"-"+t+"\');\" ";
-    //
-    // TODO: fix this so it only highlights for first occance of item in inventory
-    // Done?
-    if (isWearing(t)&&!o[t]) {
-      SB=SB+" style=\"background-color: #80FF80; \"; ";
-	 o[t]=1;
-    } else {
-      SB=SB+" style=\"background-color: #ffffd0; \"; ";
-    }
-    SB=SB+" border=1>&nbsp;";
+    bg="#ffffd0";
+    if (isWearing(t)&&!o[t]) { bg="#80FF80"; o[t]=1; }
+    if (Bait==t&&!p[t]) { bg="#80FF80"; p[t]=1; }
+    SB=SB+" style=\"background-color: "+bg+"\" border=1>&nbsp;";
     if ((i+1)/6==Math.floor((i+1)/6)) { SB=SB+"<br>"; }
   }
   ///document.getElementById("Inv"+i).style.backgroundColor=bg;
