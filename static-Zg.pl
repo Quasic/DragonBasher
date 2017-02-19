@@ -41,23 +41,19 @@ if ($player{'inven'}=~/Za/) {
           do 'inv.pl'; print "pop=Lost Bait!\n";
         }
       } else {
-        $odds=0;
-        print "pop=Need Bait\n";
+        $odds=0; print "pop=Need Bait\n";
       }
     } else {
-      print "pop=Need Bait\n";
+      $odds=0; print "pop=Need Bait\n";
     }    
   }
   
   if ($odds) {
     # catch fish
     if (int(rand(100))<$odds) {
-      if ($fish eq "Ga") { $estamp=3600; }
-      if ($fish eq "Gd") { $estamp=86400; }
-      if ($fish eq "Ge") { $estamp=86400; }
+      $new=$fish; do "newstamp.pl"; 
       $f=index($player{'inven'}, "Za");
-      $estamp=$cstamp+$estamp; $estamp=sprintf("%08x", $estamp);
-      $player{'inven'}=substr($player{'inven'},0,$f).$fish.$estamp.substr($player{'inven'},$f+10);
+      $player{'inven'}=substr($player{'inven'},0,$f).$fish.$e.substr($player{'inven'},$f+10);
       do 'inv.pl'; 
       print "pop=You catch a Fish! $a\n";
     } else {

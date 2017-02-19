@@ -25,6 +25,7 @@ print "inv=$inv\n";
 
 ## reduce health
 $player{'h'}=$player{'h'}-1;
+print "h=$player{'h'}\n";
 
 ## ultimately move this to the main 11-dragon.cgi script
 if ($player{'h'}<1) {
