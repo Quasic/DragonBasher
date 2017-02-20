@@ -2,7 +2,7 @@
 $version="1.0";
 
 $filestamp=glob "$datadir/dynamic/$player{'tmap'}/$form{'j'}??????????$player{'tz'}.txt";
-print "pop=$form{'j'} - $filestamp\n";
+#print "pop=$form{'j'} - $filestamp\n";
 if ($filestamp) {
   $f=index($player{'inven'}, "Za");
   if ($f>-1) {

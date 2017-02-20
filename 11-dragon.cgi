@@ -13,7 +13,8 @@
 #
 # need to add a check to make sure created player name does
 # not start with the letters npc
-# 
+#
+ 
 use CGI::Carp qw( fatalsToBrowser );
 $| = -1;
 require "11-config.pl";
@@ -40,6 +41,7 @@ if ($form{'c'} eq "external.js") {
 $form{'s'}=~s/[^A-Za-z0-9\-]//g;
 $form{'c'}=~s/[^A-Za-z0-9\-]//g;
 $form{'j'}=~s/[^A-Za-z0-9 -]//g;
+$form{'k'}=~s/[^A-Za-z0-9 -]//g;
 $form{'d'}=~s/[^A-Za-z0-9]//g;
 $form{'m'}=~s/[^A-Za-z0-9]//g;
 
@@ -144,6 +146,8 @@ if ($error) {
   if ($form{'c'} eq "logout")     { do "logout.pl"; }
   if ($form{'c'} eq "char") { do "char.pl"; }
   if ($form{'c'} eq "tele") { do "tele.pl"; }
+  if ($form{'c'} eq "cook") { do "cook.pl"; }
+  if ($form{'c'} eq "eat") { do "eat.pl"; }
   if ($form{'c'} eq "wear") { do "wear.pl"; }
   if ($form{'c'} eq "remove") { do "remove.pl"; print "dinv=1\n"; do "token.pl"; $form{'c'}="refresh"; }
   if ($form{'c'} eq "get") { do "get.pl"; }
@@ -165,6 +169,7 @@ if ($error) {
   #substr($player{'inven'},0,2)="S1";
   # $player{'map'}="B2"; 
   &saveplayer($filename);
+  
   # print "pop=$player{'map'} $player{'z'}\n";
   # print "pop=$player{'tmap'} $player{'tz'}\n";
   # print "pop=$player{'inven'}\n";

@@ -162,6 +162,7 @@ CharObj="new";
 CharPObj={};
 CharMapObj={};
 Wearing="";
+Bait="";
 CharY=5;
 CharX=2;
 CharZ=0;
@@ -330,8 +331,9 @@ function ClickHere(z,T){//forget T if using client 4-screen view z-location, oth
    for (i=0; i<items.length; i++) {
     item=items[i].split("=");
     if (item[1]==sZ) {
-      if (item[0].length==2) { // item
-        m.push('<a href="javascript:var Que=\'static&j='+item[0]+'\'; MoveThere();">'+ItemID(item[0])+'</a>');
+      if (item[0].length==2) {
+        // make subroutine that includes data like bait
+        m.push('<a href="javascript:ClickStatic(\''+item[0]+'\');">'+ItemID(item[0])+'</a>');
       } else {
         if (item[0].substring(0,3)=="NPC") { // npc
           // computer characters already processed, do nothing here
@@ -348,11 +350,9 @@ function ClickHere(z,T){//forget T if using client 4-screen view z-location, oth
     }
    }
   }
-  
-
   // if not, then move player
   if(m.length){
-    POP((p?'<a href=javascript:Null(); onmousedown="RInven=1">Your Inventory</a><br />':'')+m.join("<br />")+'<br /><a href=javascript:Null(); onmousedown="MoveThere()">Walk/Sail Here</a>',"click");
+    POP((p?'<a href=javascript:Null(); onmousedown="RInven=1">Inventory</a><br />':'')+m.join("<br />")+'<br /><a href=javascript:Null(); onmousedown="MoveThere()">Walk Here</a>',"click");
   }else{
     if(p){
       RInven=1;
@@ -360,6 +360,12 @@ function ClickHere(z,T){//forget T if using client 4-screen view z-location, oth
       MoveThere();
     }
   }
+}
+
+function ClickStatic(a) {
+  Que="static&j="+a;
+  if (a=="Zg") { Que=Que+"&k="+Bait; }
+  MoveThere();
 }
 
 function MoveThere(){
@@ -486,8 +492,7 @@ function HitIt() {
   var idle='',t,m=Moves,cmd=ToDo||m&&"refresh",chatlog=SendChatTo&&SendChatTo.log||Chatting&&Chatting.log;Moves=ToDo="";HittingIt=1;
   if (IStamp+IdleLimit<CStamp){
     if (true/*!isMod()*/) { //this check turns off idle logout for players with the sysop key
-      cmd="logout";
-      idle=" due to inactivity";
+      cmd="logout"; idle=" due to inactivity";
     }
   }
   if (!cmd) { cmd=SendChat&&SendChatTo?"chat&j="+SendChatTo.metachannel+"&q="+(window.encodeURIComponent||window.escape)(SendChat).replace(/\+/g,"%2b"):Chatting&&Chatting.metachannel?"chat&j="+Chatting.metachannel:"refresh"; SendChat="";SendChatTo=0; }
@@ -496,8 +501,7 @@ function HitIt() {
     url: Server,
     type: 'GET',
     data: 's='+ServerName+'&n='+CharName+'&p='+CharPswd+'&c='+cmd+'&m='+m,
-    contentType: 'application/json; charset=utf-8',
-    success: function (response) {
+    contentType: 'application/json; charset=utf-8', success: function (response) {
       var i,i0="",i1="",i2="",i3="",s0="",s1="",s2="",s3="",p=0,t,h,M="";
       SResults=response.match(/[^\r\n]+/g);
       if (SResults) {
@@ -506,13 +510,10 @@ function HitIt() {
         for (i=0; i<SResults.length; i++) {
           SVar=SResults[i].substring(0,SResults[i].indexOf("="));
           SValue=SResults[i].substring(SResults[i].indexOf("=")+1,SResults[i].length);
-          //
           // uncomment next line to debug server results
-          //alert(SVar+"="+SValue);
-          //
+          // alert(SVar+"="+SValue);
           // react to server results
           // p=players, c=characters, b=buildings, i=items
-          //
           if (SVar=="create"){ PopForce="hidden"; }
           if (SVar=="login"){
             CharName=SValue; POP(SValue+" logged in."); PopForce="hidden"; PopAlign="char"; cinput();
@@ -583,6 +584,7 @@ function HitIt() {
       RefRPG=0;
       if (Que) {
         if (Moves=="") {
+          // @@@
           ToDo=Que; Que="";
         }
       }
@@ -727,23 +729,15 @@ function ClickInven(a){
   Wearing=isWearing(MenuItem);
   Game="<p>&nbsp;"+ItemID(MenuItem)+"&nbsp;<p>";
   Game=Game+"&nbsp;<img src=\""+DirItem+"/O"+MenuItem+".gif\" height=32 width=32 onmousedown=\"DistplayInven();\" ";
-  if (Wearing) {
-    Game=Game+" style=\"background-color: #80FF80; \"; ";
-  } else {
-    Game=Game+" style=\"background-color: #ffffd0; \"; ";
-  }
-  Game=Game+" border=1>&nbsp;<p>";
+  bg="#ffffd0";
+  if (MenuItem==Bait) { bg="#80FF80"; }
+  if (Wearing) { bg="#80FF80"; }
+  Game=Game+" style=\"background-color: "+bg+";\" border=1>&nbsp;<p>";
 
   if (MenuItem>="A0" && MenuItem<="Kz") {
     Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>';
   }
   if (MenuItem==isMod.key) { // sysop key menu
-    //
-    // TODO: check to see if player is standing on static object and offer delete option instead of add
-    //       delete works exactly the same on server, you can currently delete a
-    //       static object by adding a static object while standing on an existing one.
-    //   Done?
-    //
     var s=window["static"+CharPObj.tmap0].split(" "),i,o;
     for(i=0;i<s.length;i++)if(s[i].split("=")[1]==CharPObj.tz){o=s[i].split("=")[0];break;}
     Game+="<a href=\"javascript:LoadChat('/tele ','[map]-[z]')\">/teleport</a><br>";
@@ -760,10 +754,20 @@ function ClickInven(a){
     Game+='<a href="javascript:'+(i<s.length?'Null(ToDo=\'add&j='+o+'\');">Delete '+(o.length==2?ItemID(o):o):'AddStatic(0);">Add Static Item')+'</a><br>';
   }
   
-  //
-  // this is using old item code with numeral - update
-  //
-  if (MenuItem>="L0" && MenuItem<="Sz") {
+  if (MenuItem>="Ga" && MenuItem<="Gz") {
+    Game=Game+'<a href="javascript:Cook(\''+MenuItem+'\');">Cook '+ItemID(MenuItem)+'</a><br>';
+    if (MenuItem==Bait) {
+      Game=Game+'<a href="javascript:ClickBait(0);">Using As Bait</a><br>';
+    } else {
+      Game=Game+'<a href="javascript:ClickBait(\''+MenuItem+'\');">Use As Bait</a><br>';
+    }
+  }
+
+  if (MenuItem>="Ja" && MenuItem<="Jz") {
+    Game=Game+'<a href="javascript:Eat(\''+MenuItem+'\');">Eat '+ItemID(MenuItem)+'</a><br>';
+  }
+    
+  if (MenuItem>="La" && MenuItem<="Sz") {
     if (Wearing) {
       if (MenuItem=="Sa") {
         Game=Game+'<a href="javascript:var ToDo=\'team&j='+MenuItem+'\';">Team Teleport</a><br>';
@@ -780,6 +784,8 @@ function ClickInven(a){
   if (MenuItem=="Zj"){ Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>'; }
   PopAlign="char"; POP(Game);
 }
+
+function ClickBait(a) { if (a) { Bait=a; } else { Bait=""; } RefreshInven(); }
 
 function SetMode() {
   if (TileMode) {
@@ -800,6 +806,20 @@ function SetFill() {
     TileFill=Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1);
     POP("Now in tile fill mode - "+TileFill);
   }
+}
+
+function Cook(a) {
+  ToDo="cook&j="+a;
+  POP("Cooking "+ItemID(a)+"...");
+}
+
+function Eat(a) {
+  ToDo="eat&j="+a;
+  POP("Eating "+ItemID(a)+"...");
+}
+
+function Match(a) {
+  
 }
 
 function CreateItem(a){
@@ -1478,22 +1498,16 @@ function POP(a,align) {
 
 //view-menu
 function DisplayInven() {
-	var t,o={};
+  var t,o={},p={};
   SB="<p align=center>";
   for (i=0;i<NumInven;i++) {
     t=CharInven.substring(i*2,i*2+2);
     SB=SB+"&nbsp;<img id=\"Inv"+i+"\" src=\""+DirItem+"/O"+t+".gif\" height=32 width=32 ";
     SB=SB+"onmousedown=\"ClickInven(\'"+i+"-"+t+"\');\" ";
-    //
-    // TODO: fix this so it only highlights for first occance of item in inventory
-    // Done?
-    if (isWearing(t)&&!o[t]) {
-      SB=SB+" style=\"background-color: #80FF80; \"; ";
-	 o[t]=1;
-    } else {
-      SB=SB+" style=\"background-color: #ffffd0; \"; ";
-    }
-    SB=SB+" border=1>&nbsp;";
+    bg="#ffffd0";
+    if (isWearing(t)&&!o[t]) { bg="#80FF80"; o[t]=1; }
+    if (Bait==t&&!p[t]) { bg="#80FF80"; p[t]=1; }
+    SB=SB+" style=\"background-color: "+bg+"\" border=1>&nbsp;";
     if ((i+1)/6==Math.floor((i+1)/6)) { SB=SB+"<br>"; }
   }
   ///document.getElementById("Inv"+i).style.backgroundColor=bg;
