@@ -12,11 +12,11 @@ $gfxurl="$htmlurl/11-gfx";
 
 $NumInven=24;
 
-$DirBuild=$gfxurl."/11-gfx/b";
-$DirChar=$gfxurl."/11-gfx/c";
-$DirItem=$gfxurl."/11-gfx/i";
-$DirKeys=$gfxurl."/11-gfx/k";
-$DirTile=$gfxurl."/11-gfx/t";
+$DirBuild="$gfxurl/b";
+$DirChar="$gfxurl/c";
+$DirItem="$gfxurl/i";
+$DirKeys="$gfxurl/k";
+$DirTile="$gfxurl/t";
 
 $MapSizeX=13;
 $MapSizeY=7;
