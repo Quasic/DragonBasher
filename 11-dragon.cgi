@@ -148,6 +148,7 @@ if ($error) {
   if ($form{'c'} eq "tele") { do "tele.pl"; }
   if ($form{'c'} eq "cook") { do "cook.pl"; }
   if ($form{'c'} eq "eat") { do "eat.pl"; }
+  if ($form{'c'} eq "match") { do "match.pl"; }
   if ($form{'c'} eq "wear") { do "wear.pl"; }
   if ($form{'c'} eq "remove") { do "remove.pl"; print "dinv=1\n"; do "token.pl"; $form{'c'}="refresh"; }
   if ($form{'c'} eq "get") { do "get.pl"; }

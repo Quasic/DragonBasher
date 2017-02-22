@@ -731,6 +731,7 @@ function ClickInven(a){
   if (MenuItem>="A0" && MenuItem<="Kz") {
     Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>';
   }
+ 
   if (MenuItem==isMod.key) { // sysop key menu
     var s=window["static"+CharPObj.tmap0].split(" "),i,o;
     for(i=0;i<s.length;i++)if(s[i].split("=")[1]==CharPObj.tz){o=s[i].split("=")[0];break;}
@@ -747,9 +748,13 @@ function ClickInven(a){
     }
     Game+='<a href="javascript:'+(i<s.length?'Null(ToDo=\'add&j='+o+'\');">Delete '+(o.length==2?ItemID(o):o):'AddStatic(0);">Add Static Item')+'</a><br>';
   }
+
+  if (MenuItem>="Dj" && MenuItem<="Dl") {
+    Game=Game+'<a href="javascript:Match(\''+MenuSlot+'-'+MenuItem+'\');">Light Fire</a><br>';
+  }
   
   if (MenuItem>="Ga" && MenuItem<="Gz") {
-    Game=Game+'<a href="javascript:Cook(\''+MenuItem+'\');">Cook '+ItemID(MenuItem)+'</a><br>';
+    Game=Game+'<a href="javascript:Cook(\''+MenuSlot+'-'+MenuItem+'\');">Cook '+ItemID(MenuItem)+'</a><br>';
     if (MenuItem==Bait) {
       Game=Game+'<a href="javascript:ClickBait(0);">Using As Bait</a><br>';
     } else {
@@ -758,7 +763,7 @@ function ClickInven(a){
   }
 
   if (MenuItem>="Ja" && MenuItem<="Jz") {
-    Game=Game+'<a href="javascript:Eat(\''+MenuItem+'\');">Eat '+ItemID(MenuItem)+'</a><br>';
+    Game=Game+'<a href="javascript:Eat(\''+MenuSlot+'-'+MenuItem+'\');">Eat '+ItemID(MenuItem)+'</a><br>';
   }
     
   if (MenuItem>="La" && MenuItem<="Sz") {
@@ -803,17 +808,21 @@ function SetFill() {
 }
 
 function Cook(a) {
+  MenuItem=a.split("-")[1];
   ToDo="cook&j="+a;
-  POP("Cooking "+ItemID(a)+"...");
+  POP("Cooking "+ItemID(MenuItem)+"...");
 }
 
 function Eat(a) {
+  MenuItem=a.split("-")[1];
   ToDo="eat&j="+a;
-  POP("Eating "+ItemID(a)+"...");
+  POP("Eating "+ItemID(MenuItem)+"...");
 }
 
 function Match(a) {
-  
+  MenuItem=a.split("-")[1];
+  ToDo="match&j="+a;
+  POP("Lighting Match...");
 }
 
 function CreateItem(a){
