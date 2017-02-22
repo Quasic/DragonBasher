@@ -63,7 +63,7 @@ if (length($pswd)>32) { $pswd=substr($pswd,0,32); }
 if (!$filename) {
   ## if no username provided, send client as response 
   open (FILE, "client.htm"); @client=<FILE>; close FILE;
-  foreach $line (@client) { chomp($line); if($line eq'//[configuration];'){print"DirBuild=\"$DirBuild\";\nDirChar=\"$DirChar\";\nDirItem=\"$DirItem\";\nDirKeys=\"$DirKeys\";\nDirTile=\"$DirTile\";\nMapSizeX=\"$MapSizeX\";\nMapSizeY=\"$MapSizeY\";\n";}else{ $line =~ s/\[htmlurl\]/$htmlurl/gi; print "$line\n"; }}
+  foreach $line (@client) { chomp($line); if(substr($line,0,18)eq'//[configuration];'){print"DirBuild=\"$DirBuild\";\nDirChar=\"$DirChar\";\nDirItem=\"$DirItem\";\nDirKeys=\"$DirKeys\";\nDirTile=\"$DirTile\";\nMapSizeX=\"$MapSizeX\";\nMapSizeY=\"$MapSizeY\";\n";}else{ $line =~ s/\[htmlurl\]/$htmlurl/gi; print "$line\n"; }}
   exit;
 }
 
