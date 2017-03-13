@@ -23,7 +23,7 @@ ServerPath="/cgi-bin/11-dragon/";
 Server="[htmlurl]"+ServerPath+"11-dragon.cgi";
 ServerName="11-dragon";
 
-//[configuration];
+//[configuration]; (Dir...and MapSizeX and Y variable declarations inserted here by 11-dragon.cgi)
 
 // Timers
 
@@ -31,6 +31,20 @@ tick=1000;//target ping in ms
 subtick=tick/5;//animation ms between frames
 scroll_length=tick;//scroll animation speed
 IdleLimit=60000*5;//ms before autologout
+timenames={
+second:1,
+minute:60,
+hour:3600,
+day:86400,
+weekend:259200,
+week:605800,
+month:2592000,
+season:7778000,
+quarter:7778000,
+year:31104000,
+olympiad:124416000,
+decade:311040000,
+century:3110400000};
 
 // Map
 
@@ -1255,6 +1269,10 @@ if(a.length==1){return c;}
 if(c=="char"){return"char&d="+a[1];}
 if(c=="drop"&&a.length==2){return"drop&j="+(a[1].indexOf("-")>=0?a[1]:isNaN(a[1])?CharInven.indexOf(a[1].charAt(0)=="^"?a[1].substring(1):a[1])/2+"-"+a[1]:a[1]+"-"+CharInven.substring(a[1]*2,a[1]*2+2));}
 a.shift();
+if(c=="add"){
+if(a.length==1)a=a[0].split("-");
+if(a.length>1&&timenames[a[1]])a[1]=timenames[a[1]];
+}
 if(c=="chat"){return"chat&j="+Chatting.metachannel+"&q="+e(a.join(" "));}//probably useless, really
 if(c=='s'&&a.length<2){a.push(30);}//default lifetime for new items
 if(c=="inventory"){
