@@ -1270,8 +1270,8 @@ if(c=="char"){return"char&d="+a[1];}
 if(c=="drop"&&a.length==2){return"drop&j="+(a[1].indexOf("-")>=0?a[1]:isNaN(a[1])?CharInven.indexOf(a[1].charAt(0)=="^"?a[1].substring(1):a[1])/2+"-"+a[1]:a[1]+"-"+CharInven.substring(a[1]*2,a[1]*2+2));}
 a.shift();
 if(c=="add"){
-if(a.length==1)a=a[0].split("-");
-if(a.length>1&&timenames[a[1]])a[1]=timenames[a[1]];
+if(a.length==1){a=a[0].split("-");}
+if(a.length>1&&timenames[a[1]]){a[1]=timenames[a[1]];}
 }
 if(c=="chat"){return"chat&j="+Chatting.metachannel+"&q="+e(a.join(" "));}//probably useless, really
 if(c=='s'&&a.length<2){a.push(30);}//default lifetime for new items
