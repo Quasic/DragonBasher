@@ -10,11 +10,11 @@ $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
 
 if ($y>$ScrollUp) {
-  $y--; $player{'z'}=($y*$MapWide)+$x;
+  $y--;
 } else {
   $b1=substr($player{'map'},1,1);
   if($b1 gt '9'){
-    $x=-1;
+    if($y){$y--;}else{$x=-1;}
   }else{
   ## scroll up
   do "loadmap.pl";
@@ -26,12 +26,12 @@ if ($y>$ScrollUp) {
   $tileset4=&loadmap($map4);
   $tileset5=&loadmap($map5);
   $y=$y+$MapSizeY;
-  $player{'z'}=($y*$MapWide)+$x;
   $player{'map'}="$a1$b1";
   print "t4=$tileset4\n";
   print "t5=$tileset5\n";
   print "scroll=up\n";
 }}
+$player{'z'}=($y*$MapWide)+$x;
 if($x>=0){
 $TickObj.="u";
 

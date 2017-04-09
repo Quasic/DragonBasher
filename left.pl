@@ -7,12 +7,11 @@ $map="";
 $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
 if ($x>$ScrollLeft) {
-  $x--; $player{'z'}=($y*$MapWide)+$x;
-  substr($player{'object'},3,1)="L";
+  $x--;
 } else {
   $b1=substr($player{'map'},1,1);
   if($b1 gt '9'){
-    $x=-1;
+    if($x){$x--}else{$x=-1;}
   }else{
     ## scroll left
     do "loadmap.pl";
@@ -25,13 +24,14 @@ if ($x>$ScrollLeft) {
     $tileset4=&loadmap($map4);
     $tileset5=&loadmap($map5);
     $x=$x+$MapSizeX;
-    $player{'z'}=($y*$MapWide)+$x;
     $player{'map'}="$a1$b2";
     print "t4=$tileset4\n";
     print "t5=$tileset5\n";
     print "scroll=left\n";
   }
 }
+$player{'z'}=($y*$MapWide)+$x;
+substr($player{'object'},3,1)="L";
 if($x>=0){
   $TickObj.="l";
   do "token.pl";

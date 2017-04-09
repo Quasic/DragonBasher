@@ -13,7 +13,11 @@ $map="";
 
 $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
-
+if($b1 gt '9'){#city
+  $map="$a1$b1";
+  #no need to check $x
+  if($y>$MapHigh){$y=$MapHigh;}
+}else{
 if ($y>$MapSizeY) {
   #print "pop=y > MapSizeY\n";
   $y=$y-($MapSizeY+1);
@@ -29,6 +33,7 @@ if ($x>=$MapSizeX+1) {
 } else {
   #print "pop=x > MapSizeX else \n";
   $map.="$b1";
+}
 }
 $z=($y*($MapSizeX+1))+$x;
 

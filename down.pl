@@ -10,11 +10,11 @@ $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
 
 if ($y<$ScrollDown) {
-  $y++; $player{'z'}=($y*$MapWide)+$x;
+  $y++;
 } else {
   $b1=substr($player{'map'},1,1);
   if($b1 gt '9'){
-    $x=-1;
+    if($y<$MapHigh){$y++;}else{$x=-1;}
   }else{
   ## scroll down
   do "loadmap.pl";
@@ -22,7 +22,6 @@ if ($y<$ScrollDown) {
   $b2=chr(ord($b1)+1); if ($b2 gt $MapEdgeX) { $b2="0"; }
   $a2=chr(ord($a1)+1); if ($a2 gt $MapEdgeY) { $a2="A"; }
   $y=$y-$MapSizeY;
-  $player{'z'}=($y*$MapWide)+$x;
   $player{'map'}="$a1$b1";
   $map4="$a2$b1";
   $map5="$a2$b2";
@@ -34,6 +33,7 @@ if ($y<$ScrollDown) {
   $steps=1;
   $form{'m'}=substr($form{'m'},0,1).".".substr($form{'m'},1);  
 }}
+$player{'z'}=($y*$MapWide)+$x;
 if($x>=0){
 $TickObj.="d";
 

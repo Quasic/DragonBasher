@@ -4,13 +4,33 @@ $version="1.0";
 ## get maps player is on
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1); $a2=$a1;
 $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
-if($b1 gt '9'){
+if($b1 gt '9'){#city
   $map="$a1$b1";
-  opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR); &players(1);
-  opendir(DIR,"$datadir/dynamic/$map/"); @data=readdir(DIR); closedir(DIR); &items(1);
-  opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR); &static(1);
-  if ($items) { print "i0=$items\n"; $items=""; }
-  if ($static) { print "s0=$static\n"; $static=""; }
+  opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR);
+  foreach $line (@data) {
+    chomp($line);
+    if (length($line)<3) { next; }
+    @tokens = split(/ /, $line);  
+    if ($cstamp>$tokens[4]) {
+      ## expired
+      unlink "$datadir/tokens/$map/$line";
+    } else {
+	  $q=0;
+	  $z=tokens[3];
+      print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
+    }
+  }
+  #opendir(DIR,"$datadir/dynamic/$map/"); @data=readdir(DIR); closedir(DIR); &items(1);
+  #opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR); &static(1);
+  ##need to split to 4 client screens
+  #if ($items) { print "i0=$items[0]\n"; $items=""; }
+  #if ($items) { print "i1=$items[1]\n"; $items=""; }
+  #if ($items) { print "i2=$items[2]\n"; $items=""; }
+  #if ($items) { print "i3=$items[3]\n"; $items=""; }
+  #if ($static) { print "s0=$static[0]\n"; $static=""; }
+  #if ($static) { print "s1=$static[1]\n"; $static=""; }
+  #if ($static) { print "s2=$static[2]\n"; $static=""; }
+  #if ($static) { print "s3=$static[3]\n"; $static=""; }
   if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
     chomp($tilestamp);
