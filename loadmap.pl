@@ -3,7 +3,7 @@ $version=1.0;
 
 sub loadmap {
   ## validate $map as capital letter and numeral 
-  ## skip this and assume map is correct for performance?
+  ## use below sub if map is correct, for performance
   $f=0;
   if (substr($_[0],0,1) ge "A") {
     if (substr($_[0],0,1) le "Z") {
@@ -19,6 +19,13 @@ sub loadmap {
     }
   }
   if ($f) {
+    return &loadvalidmap;
+  } else {
+    print "pop=invalid map $_[0]\n";
+    return "";
+  }
+}
+sub loadvalidmap { #use this if map code is already verified, for better performance
     if (!-e "$datadir/maps/$_[0]/t.txt") {
       $tileset="";
       for ($i=0; $i<(14*10)*4; $i++) {
@@ -41,10 +48,6 @@ sub loadmap {
     }
     $player{'ts'}=$cstamp;
     return $tileset;
-  } else {
-    print "pop=invalid map $_[0]\n";
-    return "";
-  }
 }
 
 1;

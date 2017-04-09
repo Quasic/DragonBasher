@@ -2,9 +2,39 @@
 $version="1.0";
 
 ## get maps player is on
-do "loadmap.pl";
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1); $a2=$a1;
-$a2++; if ($a2>$MapEdgeY) { $a2="A"; } $b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
+$a2++; if ($a2>$MapEdgeY) { $a2="A"; }
+if($b1 gt '9'){
+  $map="$a1$b1";
+  #items
+  #static
+  if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
+    open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
+    chomp($tilestamp);
+    if ($tilestamp) {
+      if ($player{'ts'} ne $tilestamp) {
+        do "token.pl";
+	    if (!-e "$datadir/maps/$map/t.txt") {
+          $tileset="";
+          for ($i=0; $i<(14*10)*4; $i++) {
+            $tile="Ua"; #default tile for city
+            $tileset.="$tile";
+          }
+          #if (!-d "$datadir/maps/$_[0]") { mkdir "$datadir/maps/$_[0]"; }
+          #if (!-w "$datadir/maps/$_[0]") { chmod 0755, "$datadir/maps/$_[0]"; }
+          #open (FILE, ">$datadir/maps/$_[0]/t.txt"); print FILE "$tileset\n"; close FILE;
+          #open (FILE, ">$datadir/maps/$_[0]/s.txt"); print FILE "$cstamp\n"; close FILE;
+        } else {
+          open (FILE, "$datadir/maps/$_[0]/t.txt"); @tileset=<FILE>; close (FILE);
+        }
+        $player{'ts'}=$cstamp;
+        print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
+        $player{'ts'}=$tilestamp;
+      }
+    } 
+  }
+}else{
+$b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
 $map1="$a1$b1"; $map2="$a1$b2"; $map3="$a2$b1"; $map4="$a2$b2";
 
 ## $token="[name] [level] [object] [z] [timestamp] ";
@@ -49,7 +79,7 @@ if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     }
   } 
 }
-
+}
 print "RStatic=1\n";
 
 sub players {
