@@ -12,10 +12,13 @@ $x=$player{'z'}-($y*$MapWide);
 if ($y<$ScrollDown) {
   $y++; $player{'z'}=($y*$MapWide)+$x;
 } else {
+  $b1=substr($player{'map'},1,1);
+  if($b1 gt '9'){
+    $x=-1;
+  }else{
   ## scroll down
   do "loadmap.pl";
   $a1=substr($player{'map'},0,1); $a1=chr(ord($a1)+1); if ($a1 gt $MapEdgeY) { $a1="A"; }
-  $b1=substr($player{'map'},1,1);
   $b2=chr(ord($b1)+1); if ($b2 gt $MapEdgeX) { $b2="0"; }
   $a2=chr(ord($a1)+1); if ($a2 gt $MapEdgeY) { $a2="A"; }
   $y=$y-$MapSizeY;
@@ -30,10 +33,10 @@ if ($y<$ScrollDown) {
   print "scroll=down\n";
   $steps=1;
   $form{'m'}=substr($form{'m'},0,1).".".substr($form{'m'},1);  
-}
-
+}}
+if($x>=0){
 $TickObj.="d";
 
 do "token.pl";
-
+}
 1;
