@@ -6,8 +6,11 @@ $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1); $a2=$a1;
 $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
 if($b1 gt '9'){
   $map="$a1$b1";
-  #items
-  #static
+  opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR); &players(1);
+  opendir(DIR,"$datadir/dynamic/$map/"); @data=readdir(DIR); closedir(DIR); &items(1);
+  opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR); &static(1);
+  if ($items) { print "i0=$items\n"; $items=""; }
+  if ($static) { print "s0=$static\n"; $static=""; }
   if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
     chomp($tilestamp);
