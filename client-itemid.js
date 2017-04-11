@@ -108,7 +108,7 @@ case "Ke": return "Cheese"; break;
 case "Kf": return "Bread"; break;
 case "Kg": return "Pancakes"; break;
 case "Kh": return "Cookie"; break;
-case "Ki": return "Half a Sandwich"; breakj
+case "Ki": return "Half a Sandwich"; break;
 case "Kj": return "Sandwich"; break;
 case "Kk": return "Pizza x1"; break;
 case "Kl": return "Pizza x2"; break;
