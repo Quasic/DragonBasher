@@ -97,6 +97,7 @@ if ($form{'c'} eq "create")   {
 
 if ($server eq "" or $server eq '11-dragon') {
   ## display list of servers - can use dragon.htm as client for this purpose
+#open dir, send s= for each subdir except 11-dragon
   print "s=demo\n";
   print "s=queville\n";
   print "s=anarchy\n";
