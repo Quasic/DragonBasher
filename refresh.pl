@@ -53,10 +53,10 @@ if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
         } else {
           open (FILE, "$datadir/maps/$_[0]/t.txt"); @tileset=<FILE>; close (FILE);
         }
-		if(!$tileset[0]){$tileset[0]=&makevalidmap;}
-		if(!$tileset[1]){$tileset[1]=&makevalidmap;}
-		if(!$tileset[2]){$tileset[2]=&makevalidmap;}
-		if(!$tileset[3]){$tileset[3]=&makevalidmap;}
+		if(!$tileset[0]){$tileset[0]=&randmap;}
+		if(!$tileset[1]){$tileset[1]=&randmap;}
+		if(!$tileset[2]){$tileset[2]=&randmap;}
+		if(!$tileset[3]){$tileset[3]=&randmap;}
         $player{'ts'}=$cstamp;
         print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
         $player{'ts'}=$tilestamp;
@@ -104,15 +104,15 @@ if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
       do "token.pl";
       $map0="$a1$b1"; $map1="$a1$b2"; $map2="$a2$b1"; $map3="$a2$b2";
       $tileset0=&loadvalidmap($map0); $tileset1=&loadvalidmap($map1); $tileset2=&loadvalidmap($map2); $tileset3=&loadvalidmap($map3);
-      print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
       $player{'ts'}=$tilestamp;
       # print "pop=tileset update \n";
     }
   } 
 }
 if(!$tilestamp){
-  print "t0=\nt1=\nt2=\nt3=\n";
+  $tileset0=&randmap($map0); $tileset1=&randmap($map1); $tileset2=&randmap($map2); $tileset3=&randmap($map3);
 }
+print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
 }
 print "RStatic=1\n";
 

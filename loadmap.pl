@@ -28,14 +28,14 @@ sub loadmap {
 }
 sub loadvalidmap { #use this if map code is already verified, for better performance
     if (!-e "$datadir/maps/$_[0]/t.txt") {
-	  $tileset=&makevalidmap($_[0]);
+	  $tileset=&randmap($_[0]);
     } else {
       open (FILE, "$datadir/maps/$_[0]/t.txt"); $tileset=<FILE>; close (FILE);
     }
     $player{'ts'}=$cstamp;
     return $tileset;
 }
-sub makevalidmap { #generate
+sub randmap { #generate
       $tileset="";
       for ($i=0; $i<(14*10)*4; $i++) {
         $a=int(rand(100));
@@ -49,6 +49,7 @@ sub makevalidmap { #generate
         $tileset.="$tile";
       }
 	  #if($_[0]){
+	  #should verify and handle city codes, if used
       #if (!-d "$datadir/maps/$_[0]") { mkdir "$datadir/maps/$_[0]"; }
       #if (!-w "$datadir/maps/$_[0]") { chmod 0755, "$datadir/maps/$_[0]"; }
       #open (FILE, ">$datadir/maps/$_[0]/t.txt"); print FILE "$tileset\n"; close FILE;
