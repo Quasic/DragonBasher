@@ -104,16 +104,16 @@ if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
       do "token.pl";
       $map0="$a1$b1"; $map1="$a1$b2"; $map2="$a2$b1"; $map3="$a2$b2";
       $tileset0=&loadvalidmap($map0); $tileset1=&loadvalidmap($map1); $tileset2=&loadvalidmap($map2); $tileset3=&loadvalidmap($map3);
-      $player{'ts'}=$tilestamp;
       # print "pop=tileset update \n";
     }
   } 
 }
 if(!$tilestamp&&$player{'ts'}<0){
-  $tilestamp=-1;
+  $tilestamp=$cstamp;
   $tileset0=&randmap($map0); $tileset1=&randmap($map1); $tileset2=&randmap($map2); $tileset3=&randmap($map3);
 }
 if($tilestamp){
+  $player{'ts'}=$tilestamp;
   print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
 }
 }
