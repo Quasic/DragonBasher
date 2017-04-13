@@ -101,9 +101,6 @@ if ($server eq "" or $server eq '11-dragon') {
   opendir(DIR,$datadir);
   while($s=readdir(DIR)){print "s=$s\n" if substr($s,0,1)ne'.'&&$s ne '11-dragon';}
   closedir(DIR);
-  print "s=demo\n";
-  print "s=queville\n";
-  print "s=anarchy\n";
   print "servers=\n";
   exit;
 }
