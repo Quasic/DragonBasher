@@ -1,6 +1,8 @@
 ## external, refresh all data (main loop)
 $version="1.0";
 
+do "loadmap.pl";
+
 ## get maps player is on
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
 if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
@@ -51,6 +53,10 @@ if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
         } else {
           open (FILE, "$datadir/maps/$_[0]/t.txt"); @tileset=<FILE>; close (FILE);
         }
+		if(!$tileset[0]){$tileset[0]=&makevalidmap;}
+		if(!$tileset[1]){$tileset[1]=&makevalidmap;}
+		if(!$tileset[2]){$tileset[2]=&makevalidmap;}
+		if(!$tileset[3]){$tileset[3]=&makevalidmap;}
         $player{'ts'}=$cstamp;
         print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
         $player{'ts'}=$tilestamp;
@@ -95,7 +101,7 @@ if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
   chomp($tilestamp);
   if ($tilestamp) {
     if ($player{'ts'} ne $tilestamp) {
-      do "loadmap.pl"; do "token.pl";
+      do "token.pl";
       $map0="$a1$b1"; $map1="$a1$b2"; $map2="$a2$b1"; $map3="$a2$b2";
       $tileset0=&loadvalidmap($map0); $tileset1=&loadvalidmap($map1); $tileset2=&loadvalidmap($map2); $tileset3=&loadvalidmap($map3);
       print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
