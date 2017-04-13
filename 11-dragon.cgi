@@ -99,7 +99,7 @@ if ($server eq "" or $server eq '11-dragon') {
   ## display list of servers - can use dragon.htm as client for this purpose
 #open dir, send s= for each subdir except 11-dragon
   opendir(DIR,$datadir);
-  while($s=readdir(DIR)){print "s=$s\n" if $s ne '11-dragon';}
+  while($s=readdir(DIR)){print "s=$s\n" if substr($s,0,1)ne'.'&&$s ne '11-dragon';}
   closedir(DIR);
   print "s=demo\n";
   print "s=queville\n";
