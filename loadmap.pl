@@ -1,4 +1,5 @@
 ## internal, loads map into memory
+## Note: not currently to be used with city maps (Aa-Az-Za-Zz) which loadmap says are invalid, but handles 3-character map codes
 $version=1.0;
 
 sub loadmap {
@@ -19,7 +20,7 @@ sub loadmap {
     }
   }
   if ($f) {
-    return &loadvalidmap;
+    return &loadvalidmap($_[0]);
   } else {
     print "pop=invalid map $_[0]\n";
     return "";

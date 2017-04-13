@@ -3,7 +3,9 @@ $version="1.0";
 
 ## get maps player is on
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
-if($b1 gt '9'){#city
+if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
+  print "pop=Invalid map $a1$b1";
+}elsif($b1 gt '9'){#city
   $map="$a1$b1";
   opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR);
   foreach $line (@data) {
@@ -95,12 +97,15 @@ if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     if ($player{'ts'} ne $tilestamp) {
       do "loadmap.pl"; do "token.pl";
       $map0="$a1$b1"; $map1="$a1$b2"; $map2="$a2$b1"; $map3="$a2$b2";
-      $tileset0=&loadmap($map0); $tileset1=&loadmap($map1); $tileset2=&loadmap($map2); $tileset3=&loadmap($map3);
+      $tileset0=&loadvalidmap($map0); $tileset1=&loadvalidmap($map1); $tileset2=&loadvalidmap($map2); $tileset3=&loadvalidmap($map3);
       print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
       $player{'ts'}=$tilestamp;
       # print "pop=tileset update \n";
     }
   } 
+}
+if(!$tilestamp){
+  print "t0=\nt1=\nt2=\nt3=\n";
 }
 }
 print "RStatic=1\n";
