@@ -1,6 +1,8 @@
 ## external, refresh all data (main loop)
 $version="1.0";
 
+## if called with $player{'ts'}<0 will bypass the cache, used by login.pl
+
 do "loadmap.pl";
 
 ## get maps player is on
@@ -20,6 +22,10 @@ if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
     } else {
 	  $q=0;
 	  $z=$tokens[3];
+      $y=int($z/$MapWide);
+      $x=$z-($y*$MapWide);
+	  if($x>$MapSizeX){$q++;$x-=$MapSizeX;}
+	  if($y>$MapSizeY){$q+=2;$y-=$MapSizeY;}
       print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
     }
   }
