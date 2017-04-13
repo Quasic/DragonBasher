@@ -109,10 +109,13 @@ if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     }
   } 
 }
-if(!$tilestamp){
+if(!$tilestamp&&$player{'ts'}<0){
+  $tilestamp=-1;
   $tileset0=&randmap($map0); $tileset1=&randmap($map1); $tileset2=&randmap($map2); $tileset3=&randmap($map3);
 }
-print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
+if($tilestamp){
+  print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
+}
 }
 print "RStatic=1\n";
 
