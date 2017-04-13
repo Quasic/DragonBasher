@@ -1,7 +1,7 @@
 ## external, login routine
 $version="1.0";
 
-$player{'ts'}=0;do 'refresh.pl';#logins are infrequent requests, so cost to maintain in one place (refresh.pl) is low
+$player{'ts'}=-1;do 'refresh.pl';#logins are infrequent requests, so cost to maintain in one place (refresh.pl) is low
 #do "loadmap.pl"; do "token.pl";
 #$map0="$a1$b1"; $map1="$a1$b2"; $map2="$a2$b1"; $map3="$a2$b2";
 #$tileset0=&loadmap($map0); $tileset1=&loadmap($map1); $tileset2=&loadmap($map2); $tileset3=&loadmap($map3);
