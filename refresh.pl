@@ -2,8 +2,7 @@
 $version="1.0";
 
 ## get maps player is on
-$a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1); $a2=$a1;
-$a2++; if ($a2>$MapEdgeY) { $a2="A"; }
+$a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
 if($b1 gt '9'){#city
   $map="$a1$b1";
   opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR);
@@ -16,7 +15,7 @@ if($b1 gt '9'){#city
       unlink "$datadir/tokens/$map/$line";
     } else {
 	  $q=0;
-	  $z=tokens[3];
+	  $z=$tokens[3];
       print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
     }
   }
@@ -57,6 +56,7 @@ if($b1 gt '9'){#city
     } 
   }
 }else{
+$a2=$a1; $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
 $b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
 $map1="$a1$b1"; $map2="$a1$b2"; $map3="$a2$b1"; $map4="$a2$b2";
 
