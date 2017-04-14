@@ -14,7 +14,9 @@ if ($y<$ScrollDown) {
 } else {
   $b1=substr($player{'map'},1,1);
   if($b1 gt '9'){
+  print "pop=$y";
     if($y<$MapHigh){$y++;}else{$x=-1;}
+  print "pop=$y";
   }else{
   ## scroll down
   do "loadmap.pl";
