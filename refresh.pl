@@ -20,7 +20,7 @@ if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
       ## expired
       unlink "$datadir/tokens/$map/$line";
     } else {
-	  $q=0;
+	  $q=1;
 	  $z=$tokens[3];
       $y=int($z/$MapWide);
       $x=$z-($y*$MapWide);
