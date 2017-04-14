@@ -6,13 +6,13 @@ $ScrollRight=20; #20
 $map="";
 $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
-if ($x>$ScrollLeft) {
-  $x--;
-} else {
   $b1=substr($player{'map'},1,1);
   if($b1 gt '9'){
     if($x){$x--}else{$x=-1;}
   }else{
+if ($x>$ScrollLeft) {
+  $x--;
+} else {
     ## scroll left
     do "loadmap.pl";
     $a1=substr($player{'map'},0,1);

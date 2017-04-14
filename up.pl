@@ -9,13 +9,13 @@ $map="";
 $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
 
-if ($y>$ScrollUp) {
-  $y--;
-} else {
   $b1=substr($player{'map'},1,1);
   if($b1 gt '9'){
     if($y){$y--;}else{$x=-1;}
   }else{
+if ($y>$ScrollUp) {
+  $y--;
+} else {
   ## scroll up
   do "loadmap.pl";
   $a1=substr($player{'map'},0,1); $a1=chr(ord($a1)-1); if ($a1 lt 'A') { $a1=$MapEdgeY; }

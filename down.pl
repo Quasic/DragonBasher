@@ -9,15 +9,13 @@ $map="";
 $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
 
+  $b1=substr($player{'map'},1,1);
+  if($b1 gt '9'){
+    if($y<$MapHigh){$y++;}else{$x=-1;}
+  }else{
 if ($y<$ScrollDown) {
   $y++;
 } else {
-  $b1=substr($player{'map'},1,1);
-  if($b1 gt '9'){
-  print "pop=$y";
-    if($y<$MapHigh){$y++;}else{$x=-1;}
-  print "pop=$y";
-  }else{
   ## scroll down
   do "loadmap.pl";
   $a1=substr($player{'map'},0,1); $a1=chr(ord($a1)+1); if ($a1 gt $MapEdgeY) { $a1="A"; }
