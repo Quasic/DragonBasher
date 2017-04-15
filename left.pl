@@ -7,7 +7,7 @@ $map="";
 $y=int($player{'z'}/$MapWide);
 $x=$player{'z'}-($y*$MapWide);
   $b1=substr($player{'map'},1,1);
-  if($b1 gt '9'){
+  if($b1 ge 'a'){
     if($x){$x--}else{$x=-1;}
   }else{
 if ($x>$ScrollLeft) {
