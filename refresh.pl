@@ -66,7 +66,6 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
 		if(!$tileset[1]){$tileset[1]=&randmap;}
 		if(!$tileset[2]){$tileset[2]=&randmap;}
 		if(!$tileset[3]){$tileset[3]=&randmap;}
-        $player{'ts'}=$cstamp;
         print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
         $player{'ts'}=$tilestamp;
       }
