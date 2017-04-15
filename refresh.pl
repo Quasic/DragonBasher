@@ -7,9 +7,9 @@ do "loadmap.pl";
 
 ## get maps player is on
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
-if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
+if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
   print "pop=Invalid map $a1$b1";
-}elsif($b1 gt '9'){#city
+}elsif($b1 gt $MapEdgeX){#city
   $map="$a1$b1";
   $x1=$MapSizeX+1;
   $y1=$MapSizeY+1;

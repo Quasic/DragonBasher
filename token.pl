@@ -4,20 +4,21 @@
 ## $token="[name] [level] [object]-[tick obj] [z] [expires]";
 ##
 
-$a1=substr($player{'map'},0,1); $a2=$a1; $a2++; if ($a2>$MapEdgeY) { $a2="A"; } 
-$b1=substr($player{'map'},1,1); $b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
+$a1=substr($player{'map'},0,1); 
+$b1=substr($player{'map'},1,1);
 
 #print "pop=$player{'map'} - $a1.$b1 - $a2.$b2\n";
 
-$map="";
-
-$y=int($player{'z'}/$MapWide);
-$x=$player{'z'}-($y*$MapWide);
 if($b1 gt '9'){#city
   $map="$a1$b1";
-  #no need to check $x
-  if($y>$MapHigh){$y=$MapHigh;}
+  #this checks $y, no need to check $x
+  $z=$player{'z'}<$MapHigh*$MapWide?$player{'z'}:$MapHigh*$MapWide;
 }else{
+$a2=$a1; $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
+$b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
+$map="";
+$y=int($player{'z'}/$MapWide);
+$x=$player{'z'}-($y*$MapWide);
 if ($y>$MapSizeY) {
   #print "pop=y > MapSizeY\n";
   $y=$y-($MapSizeY+1);
@@ -34,8 +35,8 @@ if ($x>=$MapSizeX+1) {
   #print "pop=x > MapSizeX else \n";
   $map.="$b1";
 }
-}
 $z=($y*($MapSizeX+1))+$x;
+}
 
 #print "pop=tmap.$map tz.$z\n";
 
