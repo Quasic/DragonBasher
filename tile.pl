@@ -30,7 +30,7 @@ if ($player{'inven'}=~/Zd/) {
 	          if($x>$MapSizeX){$q++;$x-=$x1;}
 	          $z=$y*$x1+$x;
               substr($tileset[$q],$z*2,2)="$form{'j'}";
-              open (FILE, ">$datadir/maps/$player{'tmap'}/t.txt"); print FILE join("\n",@tileset);
+              open (FILE, ">$datadir/maps/$player{'tmap'}/t.txt"); print FILE join('',@tileset);
 			}else{
             $tileset=<FILE>;
             close (FILE);
