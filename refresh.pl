@@ -55,12 +55,12 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
             $tile="Ua"; #default tile for city
             $tileset.="$tile";
           }
-          #if (!-d "$datadir/maps/$_[0]") { mkdir "$datadir/maps/$_[0]"; }
-          #if (!-w "$datadir/maps/$_[0]") { chmod 0755, "$datadir/maps/$_[0]"; }
-          #open (FILE, ">$datadir/maps/$_[0]/t.txt"); print FILE "$tileset\n"; close FILE;
-          #open (FILE, ">$datadir/maps/$_[0]/s.txt"); print FILE "$cstamp\n"; close FILE;
+          #if (!-d "$datadir/maps/$map") { mkdir "$datadir/maps/$map"; }
+          #if (!-w "$datadir/maps/$map") { chmod 0755, "$datadir/maps/$map"; }
+          #open (FILE, ">$datadir/maps/$map/t.txt"); print FILE "$tileset\n"; close FILE;
+          #open (FILE, ">$datadir/maps/$map/s.txt"); print FILE "$cstamp\n"; close FILE;
         } else {
-          open (FILE, "$datadir/maps/$_[0]/t.txt"); @tileset=<FILE>; close (FILE);
+          open (FILE, "$datadir/maps/$map/t.txt"); @tileset=<FILE>; close (FILE);
         }
 		if(!$tileset[0]){$tileset[0]=&randmap;}
 		if(!$tileset[1]){$tileset[1]=&randmap;}
