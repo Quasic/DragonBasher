@@ -21,13 +21,13 @@ if ($player{'inven'}=~/Zd/) {
 	          if($y>$MapSizeY){$q=2;$y-=$y1;}
 	          if($x>$MapSizeX){$q++;$x-=$x1;}
 	          $z=$y*$x1+$x;
-			  while(length($tileset[$q])<$x1*$y1){$tileset[$q]="$tileset[$q]Ua";}
+			  while(length($tileset[$q])<$x1*$y1){$tileset[$q].='Ua';}
               substr($tileset[$q],$z*2,2)=$form{'j'};
-              open (FILE, ">$datadir/maps/$player{'tmap'}/t.txt"); print FILE join("\n",@tileset);
+              open (FILE, ">$datadir/maps/$player{'tmap'}/t.txt"); print FILE join("\n",@tileset)."\n";
 			}else{
             $tileset=<FILE>;
             close (FILE);
-            substr($tileset,$player{'tz'}*2,2)="$form{'j'}";?
+            substr($tileset,$player{'tz'}*2,2)="$form{'j'}";
 			open (FILE, ">$datadir/maps/$player{'tmap'}/t.txt"); print FILE "$tileset\n";
 			}
 			close FILE;
