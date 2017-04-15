@@ -11,6 +11,8 @@ if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
   print "pop=Invalid map $a1$b1";
 }elsif($b1 gt '9'){#city
   $map="$a1$b1";
+  $x1=$MapSizeX+1;
+  $y1=$MapSizeY+1;
   opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR);
   foreach $line (@data) {
     chomp($line);
@@ -24,8 +26,9 @@ if($a1 lt 'A'||$a1 gt 'Z'||$b1 lt '0'||($b1 gt '9'&&$b1 lt 'a')){
 	  $z=$tokens[3];
       $y=int($z/$MapWide);
       $x=$z-($y*$MapWide);
-	  if($x>$MapSizeX){$q++;$x-=$MapSizeX;}
-	  if($y>$MapSizeY){$q+=2;$y-=$MapSizeY;}
+	  if($y>$MapSizeY){$q=3;$y-=$y1;}
+	  if($x>$MapSizeX){$q++;$x-=$x1;}
+	  $z=$y*$x1+$x;
       print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
     }
   }

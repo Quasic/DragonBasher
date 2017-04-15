@@ -30,9 +30,9 @@ if ($x>$ScrollLeft) {
     print "scroll=left\n";
   }
 }
-$player{'z'}=($y*$MapWide)+$x;
-substr($player{'object'},3,1)="L";
 if($x>=0){
+  $player{'z'}=($y*$MapWide)+$x;
+  substr($player{'object'},3,1)="L";
   $TickObj.="l";
   do "token.pl";
 }

@@ -33,8 +33,8 @@ if ($y<$ScrollDown) {
   $steps=1;
   $form{'m'}=substr($form{'m'},0,1).".".substr($form{'m'},1);  
 }}
-$player{'z'}=($y*$MapWide)+$x;
 if($x>=0){
+$player{'z'}=($y*$MapWide)+$x;
 $TickObj.="d";
 
 do "token.pl";

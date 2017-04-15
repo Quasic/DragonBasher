@@ -31,8 +31,8 @@ if ($y>$ScrollUp) {
   print "t5=$tileset5\n";
   print "scroll=up\n";
 }}
-$player{'z'}=($y*$MapWide)+$x;
 if($x>=0){
+$player{'z'}=($y*$MapWide)+$x;
 $TickObj.="u";
 
 do "token.pl";

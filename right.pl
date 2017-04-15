@@ -33,9 +33,9 @@ if ($x<$ScrollRight) {
     $steps=1;
     $form{'m'}=substr($form{'m'},0,1).".".substr($form{'m'},1);
 } }
+if($x>=0){
 $player{'z'}=($y*$MapWide)+$x;
 substr($player{'object'},3,1)="R";
-if($x>=0){
 $TickObj.="r";
 
 do "token.pl";
