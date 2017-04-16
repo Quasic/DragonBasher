@@ -550,6 +550,7 @@ function HitIt() {
           if (SVar=="error") {
             Welcome('ERROR: '+SValue);
             ServerName="11-dragon";
+			return;
           }
           if (SVar=="servers") { ShowServers(); }
           if (SVar=="hpop")    { PopForce="hidden"; HPOP(); }
