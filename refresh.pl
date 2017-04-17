@@ -104,6 +104,7 @@ opendir(DIR,"$datadir/static/$map4/"); @data=readdir(DIR); closedir(DIR); &stati
 if ($items) { print "i3=$items\n"; $items=""; }
 if ($static) { print "s3=$static\n"; $static=""; }
 
+$tileset0='';
 if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
   open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
   chomp($tilestamp);
@@ -120,7 +121,7 @@ if(!$tilestamp&&$player{'ts'}<0){
   $tilestamp=$cstamp;
   $tileset0=&randmap($map0); $tileset1=&randmap($map1); $tileset2=&randmap($map2); $tileset3=&randmap($map3);
 }
-if($tilestamp){
+if($tileset0){
   $player{'ts'}=$tilestamp;
   print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
 }
