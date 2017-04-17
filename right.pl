@@ -11,7 +11,7 @@ $x=$player{'z'}-($y*$MapWide);
 
   $b1=substr($player{'map'},1,1);
   if($b1 ge 'a'){
-    if($x<$MapWide){$x++;}else{$x=-1;}
+    if($x<$MapWide-1){$x++;}else{$x=-1;}
   }else{
 if ($x<$ScrollRight) {
   $x++;
