@@ -43,6 +43,7 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
   #if ($static) { print "s1=$static[1]\n"; $static=""; }
   #if ($static) { print "s2=$static[2]\n"; $static=""; }
   #if ($static) { print "s3=$static[3]\n"; $static=""; }
+  @tileset=();
   if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
     chomp($tilestamp);
@@ -62,14 +63,16 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
         } else {
           open (FILE, "$datadir/maps/$map/t.txt"); @tileset=<FILE>; close (FILE);
         }
-		if(!$tileset[0]){$tileset[0]=&randmap;}
-		if(!$tileset[1]){$tileset[1]=&randmap;}
-		if(!$tileset[2]){$tileset[2]=&randmap;}
-		if(!$tileset[3]){$tileset[3]=&randmap;}
-        print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
-        $player{'ts'}=$tilestamp;
       }
     } 
+  }
+  if(!$tilestamp&&$player{'ts'}<0){
+    $tilestamp=$cstamp;
+    @tileset=(&randmap,&randmap,&randmap,&randmap);
+  }
+  if($tileset){
+          print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
+          $player{'ts'}=$tilestamp;
   }
 }else{
 $a2=$a1; $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
