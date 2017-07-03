@@ -22,27 +22,27 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
       #expired token
       unlink "$datadir/tokens/$map/$line";
     } else {
-	  $q=1;
-	  $z=$tokens[3];
-      $y=int($z/$MapWide);
-      $x=$z-($y*$MapWide);
-	  if($y>$MapSizeY){$q=3;$y-=$y1;}
-	  if($x>$MapSizeX){$q++;$x-=$x1;}
-	  $z=$y*$x1+$x;
+      ($q,$z)=&zconv($tokens[3]);
       print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
     }
   }
+  opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR);
+  @static=('','','','')
+  foreach $line (@data){
+    chomp($line);
+    if (length($line)<3) { next; }
+    $line =~ s/.txt//;
+    @tokens = split(/ /, $line);
+    ($q,$z)=&zconv($tokens[2]);
+    $static[$q].="$tokens[0]=$z ";
+  }
+  print "s0=$static[0]\ns1=$static[1]\ns2=$static[2]\ns3=$static[3]\n";
   #opendir(DIR,"$datadir/dynamic/$map/"); @data=readdir(DIR); closedir(DIR); &items(1);
-  #opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR); &static(1);
   ##need to split to 4 client screens
   #if ($items) { print "i0=$items[0]\n"; $items=""; }
   #if ($items) { print "i1=$items[1]\n"; $items=""; }
   #if ($items) { print "i2=$items[2]\n"; $items=""; }
   #if ($items) { print "i3=$items[3]\n"; $items=""; }
-  #if ($static) { print "s0=$static[0]\n"; $static=""; }
-  #if ($static) { print "s1=$static[1]\n"; $static=""; }
-  #if ($static) { print "s2=$static[2]\n"; $static=""; }
-  #if ($static) { print "s3=$static[3]\n"; $static=""; }
   @tileset=();
   if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
     open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
@@ -200,6 +200,11 @@ sub static {
   }  
 }
 
-
+sub zconv {
+  my $q=1,$y=int($_[0]/$MapWide),$x=$_[0]-($y*$MapWide);
+  if($y>$MapSizeY){$q=3;$y-=$y1;}
+  if($x>$MapSizeX){$q++;$x-=$x1;}
+  return($q,$y*$x1+$x);
+}
 
 1;
