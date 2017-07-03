@@ -1,10 +1,82 @@
 ## external, refresh all data (main loop)
 $version="1.0";
 
-## get maps player is on
+## if called with $player{'ts'}<0 will bypass the cache, used by login.pl
+
 do "loadmap.pl";
-$a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1); $a2=$a1;
-$a2++; if ($a2>$MapEdgeY) { $a2="A"; } $b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
+
+## get maps player is on
+$a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
+if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
+  print "pop=Invalid map $a1$b1";
+}elsif($b1 gt $MapEdgeX){#city
+  $map="$a1$b1";
+  $x1=$MapSizeX+1;
+  $y1=$MapSizeY+1;
+  opendir(DIR,"$datadir/tokens/$map/"); @data=readdir(DIR); closedir(DIR);
+  foreach $line (@data) {
+    chomp($line);
+    if (length($line)<3) { next; }
+    @tokens = split(/ /, $line);  
+    if ($cstamp>$tokens[4]) {
+      #expired token
+      unlink "$datadir/tokens/$map/$line";
+    } else {
+	  $q=1;
+	  $z=$tokens[3];
+      $y=int($z/$MapWide);
+      $x=$z-($y*$MapWide);
+	  if($y>$MapSizeY){$q=3;$y-=$y1;}
+	  if($x>$MapSizeX){$q++;$x-=$x1;}
+	  $z=$y*$x1+$x;
+      print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
+    }
+  }
+  #opendir(DIR,"$datadir/dynamic/$map/"); @data=readdir(DIR); closedir(DIR); &items(1);
+  #opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR); &static(1);
+  ##need to split to 4 client screens
+  #if ($items) { print "i0=$items[0]\n"; $items=""; }
+  #if ($items) { print "i1=$items[1]\n"; $items=""; }
+  #if ($items) { print "i2=$items[2]\n"; $items=""; }
+  #if ($items) { print "i3=$items[3]\n"; $items=""; }
+  #if ($static) { print "s0=$static[0]\n"; $static=""; }
+  #if ($static) { print "s1=$static[1]\n"; $static=""; }
+  #if ($static) { print "s2=$static[2]\n"; $static=""; }
+  #if ($static) { print "s3=$static[3]\n"; $static=""; }
+  @tileset=();
+  if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
+    open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
+    chomp($tilestamp);
+    if ($tilestamp) {
+      if ($player{'ts'} ne $tilestamp) {
+        do "token.pl";
+	    if (!-e "$datadir/maps/$map/t.txt") {
+          $tileset="";
+          for ($i=0; $i<(14*10)*4; $i++) {
+            $tile="Ua"; #default tile for city
+            $tileset.="$tile";
+          }
+          #if (!-d "$datadir/maps/$map") { mkdir "$datadir/maps/$map"; }
+          #if (!-w "$datadir/maps/$map") { chmod 0755, "$datadir/maps/$map"; }
+          #open (FILE, ">$datadir/maps/$map/t.txt"); print FILE "$tileset\n"; close FILE;
+          #open (FILE, ">$datadir/maps/$map/s.txt"); print FILE "$cstamp\n"; close FILE;
+        } else {
+          open (FILE, "$datadir/maps/$map/t.txt"); @tileset=<FILE>; close (FILE);
+        }
+      }
+    } 
+  }
+  if(!$tilestamp&&$player{'ts'}<0){
+    $tilestamp=$cstamp;
+    @tileset=(&randmap,&randmap,&randmap,&randmap);
+  }
+  if($tileset){
+    print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
+    $player{'ts'}=$tilestamp;
+  }
+} else {
+$a2=$a1; $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
+$b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
 $map1="$a1$b1"; $map2="$a1$b2"; $map3="$a2$b1"; $map4="$a2$b2";
 
 ## $token="[name] [level] [object] [z] [timestamp] ";
@@ -35,21 +107,28 @@ opendir(DIR,"$datadir/static/$map4/"); @data=readdir(DIR); closedir(DIR); &stati
 if ($items) { print "i3=$items\n"; $items=""; }
 if ($static) { print "s3=$static\n"; $static=""; }
 
+$tileset0='';
 if (-e "$datadir/maps/$player{'tmap'}/s.txt") {
   open (FILE, "$datadir/maps/$player{'tmap'}/s.txt"); $tilestamp=<FILE>; close FILE;
   chomp($tilestamp);
   if ($tilestamp) {
     if ($player{'ts'} ne $tilestamp) {
-      do "loadmap.pl"; do "token.pl";
+      do "token.pl";
       $map0="$a1$b1"; $map1="$a1$b2"; $map2="$a2$b1"; $map3="$a2$b2";
-      $tileset0=&loadmap($map0); $tileset1=&loadmap($map1); $tileset2=&loadmap($map2); $tileset3=&loadmap($map3);
-      print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
-      $player{'ts'}=$tilestamp;
+      $tileset0=&loadvalidmap($map0); $tileset1=&loadvalidmap($map1); $tileset2=&loadvalidmap($map2); $tileset3=&loadvalidmap($map3);
       # print "pop=tileset update \n";
     }
   } 
 }
-
+if(!$tilestamp&&$player{'ts'}<0){
+  $tilestamp=$cstamp;
+  $tileset0=&randmap($map0); $tileset1=&randmap($map1); $tileset2=&randmap($map2); $tileset3=&randmap($map3);
+}
+if($tileset0){
+  $player{'ts'}=$tilestamp;
+  print "t0=$tileset0\n"; print "t1=$tileset1\n"; print "t2=$tileset2\n"; print "t3=$tileset3\n"; print "RMap=1\n";
+}
+}
 print "RStatic=1\n";
 
 sub players {
@@ -74,6 +153,12 @@ sub items {
   # is item ... object=owner
   # $token="[name] [expires] [z]";
   # $items.=$token[0].sprintf("%02x", $token[3]);
+
+  if ($_[0] eq "1") { $dir="$datadir/dynamic/$map1"; }
+  if ($_[0] eq "2") { $dir="$datadir/dynamic/$map2"; }
+  if ($_[0] eq "3") { $dir="$datadir/dynamic/$map3"; }
+  if ($_[0] eq "4") { $dir="$datadir/dynamic/$map4"; }
+
   foreach $line (@data) {
     chomp($line);
     $line=~s/.txt//;
@@ -82,13 +167,21 @@ sub items {
     
     $tokens[1]=sprintf("%d", hex($tokens[1]));
     
+    #print "pop=$tokens 0=$tokens[0] 1=$tokens[1] 2=$tokens[2] 4=$tokens[4]\n";
     if ($cstamp>$tokens[1]) {
       # need routine to change or delete item, for now delete
       # print "pop=$token[0] deleted $cstamp > $tokens[1].\n";
-      if ($_[0] eq "1") { unlink "$datadir/dynamic/$map1/$line.txt"; }
-      if ($_[0] eq "2") { unlink "$datadir/dynamic/$map2/$line.txt"; }
-      if ($_[0] eq "3") { unlink "$datadir/dynamic/$map3/$line.txt"; }
-      if ($_[0] eq "4") { unlink "$datadir/dynamic/$map4/$line.txt"; }
+      
+      #print "pop=$tokens 0=$tokens[0] 1=$tokens[1] 2=$tokens[2] 4=2=$tokens[4]\n";
+      
+      if ($tokens[0] eq "Ia") { do "g-Ia.pl"; }
+      if ($tokens[0] eq "Fa") { do "g-Fa.pl"; }
+      if ($tokens[0] eq "Fb") { do "g-Fb.pl"; }
+      if ($tokens[0] eq "Fc") { do "g-Fc.pl"; }
+      if ($tokens[0] eq "Fd") { do "g-Fd.pl"; }
+
+      unlink "$dir/$line.txt";
+
     } else {
       $items.=$tokens[0].sprintf("%02x", $tokens[2]);
     }
