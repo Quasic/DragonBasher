@@ -28,7 +28,7 @@ sub loadmap {
 }
 sub loadvalidmap { #use this if map code is already verified, for better performance
     if (!-e "$datadir/maps/$_[0]/t.txt") {
-	  $tileset=&randmap($_[0]);
+      $tileset=&randmap($_[0]);
     } else {
       open (FILE, "$datadir/maps/$_[0]/t.txt"); $tileset=<FILE>; close (FILE);
     }

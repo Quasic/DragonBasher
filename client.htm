@@ -743,6 +743,11 @@ function ClickInven(a){
   if (Wearing) { bg="#80FF80"; }
   Game=Game+" style=\"background-color: "+bg+";\" border=1>&nbsp;<p>";
 
+  if (MenuItem>="Fa" && MenuItem<="Fd") {
+    Game=Game+'<a href="javascript:var ToDo=\'eat&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Eat '+ItemID(MenuItem)+'</a><br>';
+    Game=Game+'<a href="javascript:var ToDo=\'plant&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Plant '+ItemID(MenuItem)+'</a><br>';  
+  }
+  
   if (MenuItem>="A0" && MenuItem<="Kz") {
     Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>';
   }
@@ -1218,8 +1223,8 @@ function DecodeKey(i) {
       if (SendChat=="") {
         if (ChatLine.substring(0,1)=="/") {
           // slash commands
-	     ToDo=slashcmd(ChatLine);
-		ChatLine="";
+	      ToDo=slashcmd(ChatLine);
+		  ChatLine="";
           showtab("enter");// insert close chat window??
         }
         if (CharMuted) {
@@ -1539,8 +1544,9 @@ function DisplayInven() {
 //view-menu
 function RefreshInven() {
   RInven=0; a=100-CharH;
-  SB=CharName+'<p>Health: <img src="'+DirItem+'/OZn.gif" height=12 width='+CharH+'><img src="'+DirItem+'/OZo.gif" height=12 width='+a+'><p>'; 
-  SB=SB+DisplayInven();
+  SB=CharName+'<p>Health: <img src="'+DirItem+'/OZn.gif" height=12 width='+CharH+'><img src="'+DirItem+'/OZo.gif" height=12 width='+a+'>';
+  if (CharInven.indexOf("Zd")>-1) { SB=SB+"<br>CharMap: "+CharMap+"-"+CharZ; }  
+  SB=SB+"<p>"+DisplayInven();
   SB=SB+'<p><a href="javascript:showtab(\'default\')">Logs</a> &nbsp; <a href="javascript:ToDo=\'logout\';POP(\'Logging out...\');">Logoff</a>';
   POP(SB);
 }
@@ -1606,6 +1612,7 @@ function AddStatic(a) {
     Game=Game+"<a href=javascript:AddStatic('DOOR');>DOOR</a><br>";
     Game=Game+"<a href=javascript:AddStatic('TPORT');>TPORT</a><br>";
     Game=Game+"<a href=javascript:AddStatic('CART');>CART</a><br>";
+    Game=Game+"<a href=javascript:AddStatic('WELL');>WELL</a><br>";
     Game=Game+"<a href=javascript:AddStatic('FOUNTAIN');>FOUNTAIN</a><br>";
     Game=Game+"<a href=javascript:AddStatic('Sa-300');>"+ItemID("Sa")+"</a><br>";
   }

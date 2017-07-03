@@ -19,10 +19,10 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
     if (length($line)<3) { next; }
     @tokens = split(/ /, $line);  
     if ($cstamp>$tokens[4]) {
-      ## expired
+      #expired token
       unlink "$datadir/tokens/$map/$line";
     } else {
-	  ($q,$z)=&zconv($tokens[3]);
+      ($q,$z)=&zconv($tokens[3]);
       print "p=$tokens[0] $tokens[1] $tokens[2] $q-$z\n";
     }
   }
@@ -33,7 +33,7 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
     if (length($line)<3) { next; }
     $line =~ s/.txt//;
     @tokens = split(/ /, $line);
-	($q,$z)=&zconv($tokens[2]);
+    ($q,$z)=&zconv($tokens[2]);
     $static[$q].="$tokens[0]=$z ";
   }
   print "s0=$static[0]\ns1=$static[1]\ns2=$static[2]\ns3=$static[3]\n";
@@ -71,10 +71,10 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
     @tileset=(&randmap,&randmap,&randmap,&randmap);
   }
   if($tileset){
-          print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
-          $player{'ts'}=$tilestamp;
+    print "t0=$tileset[0]\n"; print "t1=$tileset[1]\n"; print "t2=$tileset[2]\n"; print "t3=$tileset[3]\n"; print "RMap=1\n";
+    $player{'ts'}=$tilestamp;
   }
-}else{
+} else {
 $a2=$a1; $a2++; if ($a2>$MapEdgeY) { $a2="A"; }
 $b2=$b1; $b2++; if ($b2>$MapEdgeX) { $b2="0"; }
 $map1="$a1$b1"; $map2="$a1$b2"; $map3="$a2$b1"; $map4="$a2$b2";
@@ -153,6 +153,12 @@ sub items {
   # is item ... object=owner
   # $token="[name] [expires] [z]";
   # $items.=$token[0].sprintf("%02x", $token[3]);
+
+  if ($_[0] eq "1") { $dir="$datadir/dynamic/$map1"; }
+  if ($_[0] eq "2") { $dir="$datadir/dynamic/$map2"; }
+  if ($_[0] eq "3") { $dir="$datadir/dynamic/$map3"; }
+  if ($_[0] eq "4") { $dir="$datadir/dynamic/$map4"; }
+
   foreach $line (@data) {
     chomp($line);
     $line=~s/.txt//;
@@ -161,13 +167,21 @@ sub items {
     
     $tokens[1]=sprintf("%d", hex($tokens[1]));
     
+    #print "pop=$tokens 0=$tokens[0] 1=$tokens[1] 2=$tokens[2] 4=$tokens[4]\n";
     if ($cstamp>$tokens[1]) {
       # need routine to change or delete item, for now delete
       # print "pop=$token[0] deleted $cstamp > $tokens[1].\n";
-      if ($_[0] eq "1") { unlink "$datadir/dynamic/$map1/$line.txt"; }
-      if ($_[0] eq "2") { unlink "$datadir/dynamic/$map2/$line.txt"; }
-      if ($_[0] eq "3") { unlink "$datadir/dynamic/$map3/$line.txt"; }
-      if ($_[0] eq "4") { unlink "$datadir/dynamic/$map4/$line.txt"; }
+      
+      #print "pop=$tokens 0=$tokens[0] 1=$tokens[1] 2=$tokens[2] 4=2=$tokens[4]\n";
+      
+      if ($tokens[0] eq "Ia") { do "g-Ia.pl"; }
+      if ($tokens[0] eq "Fa") { do "g-Fa.pl"; }
+      if ($tokens[0] eq "Fb") { do "g-Fb.pl"; }
+      if ($tokens[0] eq "Fc") { do "g-Fc.pl"; }
+      if ($tokens[0] eq "Fd") { do "g-Fd.pl"; }
+
+      unlink "$dir/$line.txt";
+
     } else {
       $items.=$tokens[0].sprintf("%02x", $tokens[2]);
     }

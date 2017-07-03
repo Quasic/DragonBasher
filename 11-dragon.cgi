@@ -65,7 +65,7 @@ if (length($pswd)>32) { $pswd=substr($pswd,0,32); }
 if (!$filename) {
   ## if no username provided, send client as response 
   open (FILE, "client.htm"); @client=<FILE>; close FILE;
-  foreach $line (@client) { chomp($line); if(substr($line,0,18)eq'//[configuration];'){print"DirBuild=\"$DirBuild\";\nDirChar=\"$DirChar\";\nDirItem=\"$DirItem\";\nDirKeys=\"$DirKeys\";\nDirTile=\"$DirTile\";\nMapSizeX=$MapSizeX;\nMapSizeY=$MapSizeY;\n";}else{ $line =~ s/\[htmlurl\]/$htmlurl/gi; print "$line\n"; }}
+  foreach $line (@client) { chomp($line); if(substr($line,0,18)eq'//[configuration];'){ print"DirBuild=\"$DirBuild\";\nDirChar=\"$DirChar\";\nDirItem=\"$DirItem\";\nDirKeys=\"$DirKeys\";\nDirTile=\"$DirTile\";\nMapSizeX=$MapSizeX;\nMapSizeY=$MapSizeY;\n";}else{ $line =~ s/\[htmlurl\]/$htmlurl/gi; print "$line\n"; }}
   exit;
 }
 
@@ -97,7 +97,7 @@ if ($form{'c'} eq "create")   {
 
 if ($server eq "" or $server eq '11-dragon') {
   ## display list of servers - can use dragon.htm as client for this purpose
-#open dir, send s= for each subdir except 11-dragon
+  #open dir, send s= for each subdir except 11-dragon
   opendir(DIR,$datadir);
   while($s=readdir(DIR)){print "s=$s\n" if substr($s,0,1)ne'.'&&$s ne '11-dragon';}
   closedir(DIR);
@@ -143,24 +143,25 @@ if ($error) {
 
   # execute command 
   
-  if ($form{'c'} eq "login")     { do "login.pl"; }
-  if ($form{'c'} eq "logout")     { do "logout.pl"; }
-  if ($form{'c'} eq "char") { do "char.pl"; }
-  if ($form{'c'} eq "tele") { do "tele.pl"; }
-  if ($form{'c'} eq "cook") { do "cook.pl"; }
-  if ($form{'c'} eq "eat") { do "eat.pl"; }
+  if ($form{'c'} eq "login") { do "login.pl"; }
+  if ($form{'c'} eq "logout"){ do "logout.pl"; }
+  if ($form{'c'} eq "char")  { do "char.pl"; }
+  if ($form{'c'} eq "tele")  { do "tele.pl"; }
+  if ($form{'c'} eq "cook")  { do "cook.pl"; }
+  if ($form{'c'} eq "eat")   { do "eat.pl"; }
+  if ($form{'c'} eq "plant") { do "plant.pl"; }
   if ($form{'c'} eq "match") { do "match.pl"; }
-  if ($form{'c'} eq "wear") { do "wear.pl"; }
-  if ($form{'c'} eq "remove") { do "remove.pl"; print "dinv=1\n"; do "token.pl"; $form{'c'}="refresh"; }
-  if ($form{'c'} eq "get") { do "get.pl"; }
-  if ($form{'c'} eq "drop") { do "drop.pl"; }
-  if ($form{'c'} eq "static") { do "static.pl"; }
-  if ($form{'c'} eq "delete") { do "delete.pl"; }
-  if ($form{'c'} eq "add") { do "add.pl"; }
+  if ($form{'c'} eq "wear")  { do "wear.pl"; }
+  if ($form{'c'} eq "remove"){ do "remove.pl"; print "dinv=1\n"; do "token.pl"; $form{'c'}="refresh"; }
+  if ($form{'c'} eq "get")   { do "get.pl"; }
+  if ($form{'c'} eq "drop")  { do "drop.pl"; }
+  if ($form{'c'} eq "static"){ do "static.pl"; }
+  if ($form{'c'} eq "delete"){ do "delete.pl"; }
+  if ($form{'c'} eq "add")   { do "add.pl"; }
   if ($form{'c'} eq "inventory") { do "inventory.pl"; }
-  if ($form{'c'} eq "chat") { do "chat.pl"; }
-  if ($form{'c'} eq "key") { do "key.pl"; }
-  if ($form{'c'} eq "tile") { do "tile.pl"; }
+  if ($form{'c'} eq "chat")  { do "chat.pl"; }
+  if ($form{'c'} eq "key")   { do "key.pl"; }
+  if ($form{'c'} eq "tile")  { do "tile.pl"; }
   ## keep refresh as last command, other commands can then issue it
   if ($form{'c'} eq "refresh") {  if ($cstamp>$player{'one'}) { do "one.pl"; } do "refresh.pl"; }
 
