@@ -12,6 +12,8 @@
 # http://creativecommons.org/licenses/by-nc/2.0/
 #
 use CGI; use CGI::Carp qw( fatalsToBrowser ); use File::Copy qw(copy); no warnings "all"; $| = -1; 
+use File::Basename;
+use lib dirname(__FILE__);
 require "11-config.pl";
 $ver="1.0";
 print "Content-type: text/html\n";
