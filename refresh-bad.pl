@@ -2,7 +2,6 @@
 $version="1.0";
 ## if called with $player{'ts'}<0 will bypass the cache, used by login.pl
 ## get maps player is on
-if (!$loadmap) { do "loadmap.pl"; }
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
 if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
   print "pop=Invalid map $a1$b1";
@@ -151,10 +150,10 @@ sub items {
   # $token="[name] [expires] [z]";
   # $items.=$token[0].sprintf("%02x", $token[3]);
 
-  if ($_[0] eq "1") { $dir="$datadir/dynamic/$map1"; open (FILE, "$datadir/maps/$map1/t.txt"); $tileset=<FILE>; close (FILE); }
-  if ($_[0] eq "2") { $dir="$datadir/dynamic/$map2"; open (FILE, "$datadir/maps/$map2/t.txt"); $tileset=<FILE>; close (FILE); }
-  if ($_[0] eq "3") { $dir="$datadir/dynamic/$map3"; open (FILE, "$datadir/maps/$map3/t.txt"); $tileset=<FILE>; close (FILE); }
-  if ($_[0] eq "4") { $dir="$datadir/dynamic/$map4"; open (FILE, "$datadir/maps/$map4/t.txt"); $tileset=<FILE>; close (FILE); }
+  if ($_[0] eq "1") { $dir="$datadir/dynamic/$map1"; open (FILE, "$datadir/maps/$map1/t.txt"); $set=<FILE>; close (FILE); }
+  if ($_[0] eq "2") { $dir="$datadir/dynamic/$map2"; open (FILE, "$datadir/maps/$map2/t.txt"); $set=<FILE>; close (FILE); }
+  if ($_[0] eq "3") { $dir="$datadir/dynamic/$map3"; open (FILE, "$datadir/maps/$map3/t.txt"); $set=<FILE>; close (FILE); }
+  if ($_[0] eq "4") { $dir="$datadir/dynamic/$map4"; open (FILE, "$datadir/maps/$map4/t.txt"); $set=<FILE>; close (FILE); }
 
   foreach $line (@data) {
     chomp($line);
@@ -168,17 +167,13 @@ sub items {
     if ($cstamp>$tokens[1]) {
       # need routine to change or delete item, for now delete
       # print "pop=$token[0] deleted $cstamp > $tokens[1].\n";
-      
       #print "pop=$tokens 0=$tokens[0] 1=$tokens[1] 2=$tokens[2] 4=2=$tokens[4]\n";
-      
       if ($tokens[0] eq "Ia") { do "g-Ia.pl"; }
       if ($tokens[0] eq "Fa") { do "g-Fa.pl"; }
       if ($tokens[0] eq "Fb") { do "g-Fb.pl"; }
       if ($tokens[0] eq "Fc") { do "g-Fc.pl"; }
       if ($tokens[0] eq "Fd") { do "g-Fd.pl"; }
-
       unlink "$dir/$line.txt";
-
     } else {
       $items.=$tokens[0].sprintf("%02x", $tokens[2]);
     }

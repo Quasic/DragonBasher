@@ -43,7 +43,7 @@ $form{'c'}=~s/[^A-Za-z0-9\-]//g;
 $form{'j'}=~s/[^A-Za-z0-9 -]//g;
 $form{'k'}=~s/[^A-Za-z0-9 -]//g;
 $form{'d'}=~s/[^A-Za-z0-9]//g;
-$form{'m'}=~s/[^A-Za-z0-9]//g;
+$form{'m'}=~s/[^A-Za-z0-9\.]//g;
 
 $error="";
 $filename=$form{'n'};
@@ -127,7 +127,7 @@ if ($error) {
       if ($step eq "r") { do "right.pl"; }
       if ($step eq "u") { do "up.pl"; }
       if ($step eq "d") { do "down.pl"; }
-      if ($step eq ".") { $TickObj.="."; }
+      if ($step eq ".") { $TickObj.="."; do "token.pl"; }
       $form{'m'}=substr($form{'m'},1);
       $steps--;
       if (!$form{'m'}) { $steps=0; }
@@ -145,6 +145,7 @@ if ($error) {
   
   if ($form{'c'} eq "login") { do "login.pl"; }
   if ($form{'c'} eq "logout"){ do "logout.pl"; }
+  if ($form{'c'} eq "reset") { do "reset.pl"; }
   if ($form{'c'} eq "char")  { do "char.pl"; }
   if ($form{'c'} eq "tele")  { do "tele.pl"; }
   if ($form{'c'} eq "cook")  { do "cook.pl"; }
@@ -153,6 +154,7 @@ if ($error) {
   if ($form{'c'} eq "match") { do "match.pl"; }
   if ($form{'c'} eq "wear")  { do "wear.pl"; }
   if ($form{'c'} eq "remove"){ do "remove.pl"; print "dinv=1\n"; do "token.pl"; $form{'c'}="refresh"; }
+  if ($form{'c'} eq "exam")  { do "exam.pl"; }
   if ($form{'c'} eq "get")   { do "get.pl"; }
   if ($form{'c'} eq "drop")  { do "drop.pl"; }
   if ($form{'c'} eq "static"){ do "static.pl"; }
@@ -162,13 +164,10 @@ if ($error) {
   if ($form{'c'} eq "chat")  { do "chat.pl"; }
   if ($form{'c'} eq "key")   { do "key.pl"; }
   if ($form{'c'} eq "tile")  { do "tile.pl"; }
+  if ($form{'c'} eq "grass") { do "grass.pl"; }
   ## keep refresh as last command, other commands can then issue it
   if ($form{'c'} eq "refresh") {  if ($cstamp>$player{'one'}) { do "one.pl"; } do "refresh.pl"; }
 
-  #$player{'inven'}="Z000000000";
-  #$player{'inven'}.="$player{'inven'}$player{'inven'}$player{'inven'}$player{'inven'}$player{'inven'}";
-  #$player{'inven'}.="$player{'inven'}$player{'inven'}$player{'inven'}";
-  
   #substr($player{'inven'},0,2)="S1";
   # $player{'map'}="B2"; 
   &saveplayer($filename);
@@ -188,4 +187,5 @@ if ($error) {
 ##
 ## invalid map during login bug is in token.pl
 ## dinv result code displays inventory before the refresh
+## farmhouse corrupts inventory
 ##
