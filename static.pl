@@ -33,7 +33,9 @@ foreach $line (@static) {
          ## buildings
           if ($item eq "TPORT") { do "static-tport.pl"; }
           if ($item eq "WELL") { do "static-well.pl"; }
-          if ($item eq "FOUNTAIN") { do "static-fountain.pl"; }          
+          if ($item eq "FOUNTAIN") { do "static-fountain.pl"; }
+          if ($item eq "FARMHOUSE") { do "static-farmhouse.pl"; }
+          if ($item eq "CLOTHES") { do "static-clothes.pl"; }          
         } else {
           print "pop=invalid static object\n";
         }

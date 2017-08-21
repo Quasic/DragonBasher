@@ -310,7 +310,6 @@ function ClickHere(z,T){//forget T if using client 4-screen view z-location, oth
     }
   }
   // is there a static object at this location?
-  
   a=staticitems[s];
   if(a.indexOf(hZ)>-1) {
     for(i=2;i<a.length;i+=4) {
@@ -404,6 +403,7 @@ function MoveThere(){
       //MoveZ is destination, Move is last move, which shouldn't be blank
       MovePlayer();
     }
+    Moves=Moves+".";
   }
 }
 
@@ -413,6 +413,11 @@ function MovePlayer() {
   z=(CharRY*ViewWide)+CharRX;
   if (z==MoveZ) {
     MoveZ=0; MoveX=0; MoveY=0; ToDo="";
+    //
+    // remove this
+    var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0; 
+    // POP("MoveThere "+Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1));
+    //
   } else {
     if (CharRY==MoveY) {
       if (D1=="u" || D1=="d") { D1=D2; }
@@ -438,7 +443,6 @@ function MovePlayer() {
     if(Move=="u") { CharRY--; CharY--; /*MoveChar();*/ }
     if(Move=="d") { CharRY++; CharY++; /*MoveChar();*/ }
   }
-  //POP(Moves);
 }
 
 function Welcome(msg) {
@@ -499,7 +503,8 @@ function getServerName(){ var s=location.search.match(/[?&]s=([^&]*)(&|$)/);s=s&
 function HitIt() {
   var idle='',t,m=Moves,cmd=ToDo||m&&"refresh",chatlog=SendChatTo&&SendChatTo.log||Chatting&&Chatting.log;Moves=ToDo="";HittingIt=1;
   if (IStamp+IdleLimit<CStamp){
-    if (true/*!isMod()*/) { //this check turns off idle logout for players with the sysop key
+    if (true/*!isMod()*/) {
+      // this check turns off idle logout for players with the sysop key
       cmd="logout"; idle=" due to inactivity";
     }
   }
@@ -525,36 +530,18 @@ function HitIt() {
           if (SVar=="create"){ PopForce="hidden"; }
           if (SVar=="login"){
             CharName=SValue; POP(SValue+" logged in."); PopForce="hidden"; PopAlign="char"; cinput();
-            for(var t in showtab.tabs){
-              if(showtab.tabs[t].log){
-                clog(showtab.tabs[t].loginHTML&&showtab.tabs[t].loginHTML()||"Welcome to the "+ServerName+" server, "+CharName+"!",showtab.tabs[t].log);
-              }
-            }
+            for(var t in showtab.tabs){ if(showtab.tabs[t].log){ clog(showtab.tabs[t].loginHTML&&showtab.tabs[t].loginHTML()||"Welcome to the "+ServerName+" server, "+CharName+"!",showtab.tabs[t].log); }}
             document.onkeydown=ProcessInput; document.onkeypress=CancelKey; document.onkeyup=CancelKey;
             parent.document.onkeydown=ProcessInput; parent.document.onkeypress=parent.document.onkeyup=CancelKey;
             setTimeout('MainLoop();',subtick); // starts repeating loop
-		  setTimeout(TeamChatInit,tick);
+		    setTimeout(TeamChatInit,tick);
           }
-          if (SVar=="logout"){
-            if(!idle){
-              for(var t in showtab.tabs){
-                if(showtab.tabs[t].log){
-                  showtab.tabs[t].log.html("");
-                }
-              }
-              CharName="";
-            }
-            Welcome(clog("You have been logged out"+idle+".","POPLOG"));
-            ServerName="11-dragon";
-          }
-          if (SVar=="error") {
-            Welcome('ERROR: '+SValue);
-            ServerName="11-dragon";
-			return;
-          }
+          if (SVar=="logout"){ if(!idle){ for(var t in showtab.tabs){ if(showtab.tabs[t].log){ showtab.tabs[t].log.html(""); }} CharName=""; } Welcome(clog("You have been logged out"+idle+".","POPLOG")); ServerName="11-dragon"; }
+          if (SVar=="error") { Welcome('ERROR: '+SValue); ServerName="11-dragon"; return; }
           if (SVar=="servers") { ShowServers(); }
-          if (SVar=="hpop")    { PopForce="hidden"; HPOP(); }
+          if (SVar=="hpop") { PopForce="hidden"; HPOP(); }
           if (SVar=="pop")  { PopForce="hidden"; SPop=SPop+SValue+"<br>"; }
+          if (SVar=="alert")  { alert(SValue); }
           if (SVar=="chat") { clog(SValue,chatlog); }
           if (SVar=="RMap") { RMap=SValue; }
           if (SVar=="RChar"){ RChar=SValue; }
@@ -574,13 +561,10 @@ function HitIt() {
           if (SVar=="s2"){ s2=SValue; }
           if (SVar=="s3"){ s3=SValue; }
           if (SVar=="p") { AddCharacter(SValue.split(" ")); p=1; }
-    // token="[name] [level] [object] [z] ";
-    // token[0]=name;
-    // token[1]=level;
-    // token[2]=obj;
-    // token[3]=z;
-          //if (SVar=="c") { AddCharacter(SValue.split(" "),1);}
-          //if (SVar=="b") { buildings.push(SValue); }
+          // token="[name] [level] [object] [z] ";
+          // token[0]=name token[1]=level token[2]=obj token[3]=z
+          // if (SVar=="c") { AddCharacter(SValue.split(" "),1);}
+          // if (SVar=="b") { buildings.push(SValue); }
           if (SVar=="s") { servers.push(SValue); }
           if (SVar=="scroll") { if(scrollmap){scrollmap2=SValue;}else{scrollmap=SValue;} }
           if (SVar=="moves") { M=SValue; }
@@ -590,23 +574,23 @@ function HitIt() {
         }
         if (SPop) { SPop.length-=4;POP(clog(SPop,"POPLOG")); }
       }
-      RefRPG=0;
-      if (Que) {
-        if (Moves=="") {
-          // @@@
-          ToDo=Que; Que="";
-        }
-      }
-//console.log([scrollmap,M,Moves,MoveZ,MovedZ]);
+      RefRPG=0; if (Que) { if (Moves=="") { ToDo=Que; Que=""; }}
+      //console.log([scrollmap,M,Moves,MoveZ,MovedZ]);
       if(scrollmap){
 		ScrollMap(scrollmap);
 		scrollmap=0;
 		if(M){
-			if(Moves){
-				Moves="";//TODO: fix this in ScrollMap() by adjusting MovedZ and moving below "if(Moves)" out of else clause
-			}else{
-				Moves=M;
-			}
+		  //
+		  // TODO: fix this in ScrollMap() by adjusting MovedZ
+		  //       and moving below "if(Moves)" out of else clause
+		  //
+		  if(Moves){
+		    Moves="";
+            var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0;
+            POP(Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1));
+		  } else {
+		    Moves=M;
+		  }
 		}
       }else{
 		if(Moves){/*This doesn't correct properly
@@ -642,9 +626,25 @@ function MainLoop() {
   // if no character object, request object
   // UpdateObjs();
   RefPlayers();
-  // if (MoveZ) { MovePlayer(); }
+  
+  //if (TileMode) {
+  //  pops up tile code when walking in tile mode
+  //  var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0;
+  //  POP(Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1));
+  //}
+
   //if (Chatting){showtab('default')}//hidden on RStatic, above
   RefRPG=RefRPG+subtick;
+  //
+  // make this work: should hit server if there is a command in 
+  // que, thus reducing lag times. @@@
+  // 
+  if (ToDo) {
+    //POP(Moves);
+    if (Moves=="") {
+      //POP("ToDo "+ToDo);
+    }
+  }
   if (RefRPG>=tick&&!HittingIt) { HitIt(); }
   if (ServerName != "11-dragon") { clearTimeout(MainLoop.timer);MainLoop.timer=setTimeout(MainLoop,subtick); }
 }
@@ -751,6 +751,8 @@ function ClickInven(a){
   if (MenuItem>="A0" && MenuItem<="Kz") {
     Game=Game+'<a href="javascript:var ToDo=\'drop&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Drop '+ItemID(MenuItem)+'</a><br>';
   }
+  
+  Game=Game+'<a href="javascript:var ToDo=\'exam&j='+MenuSlot+'-'+MenuItem+'\'; HPOP();">Examine '+ItemID(MenuItem)+'</a><br>';
  
   if (MenuItem==isMod.key) { // sysop key menu
     var s=window["static"+CharPObj.tmap0].split(" "),i,o;
@@ -882,9 +884,12 @@ function RefPlayers() {
     if (p.ani) {
       i=Math.floor(RefRPG/subtick);
       if(i<p.ani.length){
-        //
         // move each player one tile as per [object-moves]
-        //
+        if (TileMode) {
+          //pops up tile code when walking in tile mode
+          //var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0;
+          //POP("RefPlayers "+Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1));
+        }
         var m=+p.tmap,X=p.tz,Y=Math.floor(X/MapSizeX1);X-=Y*MapSizeX1;t=1;
         for(;i<p.ani.length;i++){
           C=p.ani.charAt(i);
@@ -892,13 +897,20 @@ function RefPlayers() {
           if(C=="l") { X++;if(X>MapSizeX){if(m&1){m++;X-=MapSizeX1;}else{t=0;}}}
           if(C=="d") { Y--;if(Y<0){if(m>2){m-=2;Y+=MapSizeY1;}else{t=0;}}}
           if(C=="u") { Y++;if(Y>MapSizeY){if(m<3){m+=2;Y-=MapSizeY1;}else{t=0;}}}
+          if(C==".") {
+            if (p.name==CharName) {
+              //not working here either - ugh
+              //var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0; 
+              //POP(Tileset[screen].charAt(ObjZ*2)+Tileset[screen].charAt((ObjZ*2)+1));
+            }
+          }
         }
         t=t&&m+'-'+(X+(Y*(MapSizeX+1)));
       }else{t=p.mapz;p.ani='';}
     }else{t=p.mapz;}
     // if player reaches an 'edge tile', delete object
     if(t){//on visible screen? (otherwise will be deleted, below)
-      //RenderObj(p,t);
+     //RenderObj(p,t);
 	 var D=([0,screenT,screenU,screenV,screenW][t.charAt(0)]||screenT).plyrdiv,
 	 d,e,f=new Function("ClickHere("+p.tz+",screen"+" TUVW".charAt(t.charAt(0))+");"),
 	 obj=p.obj.split("-")[0];
@@ -909,7 +921,7 @@ function RefPlayers() {
 	 p.screenX=ObjX;//%MapSizeX1;
 	 p.screenY=ObjY;//%MapSizeY1;
 	 if (p.name==CharName) {
-		CharPObj=p;
+ 		CharPObj=p;
 		CharMapObj=D.parentNode;
 		CharToken=p.token;
 		CharZ=ObjZ;
@@ -949,7 +961,9 @@ function RenderObj(p, mapz) { //either merge with RefPlayers or add div name par
   var object=p.obj,f1=null,/*f2=null,*/d=([0,screenT,screenU,screenV,screenW][mapz.charAt(0)]||screenT),D=d.plyrdiv,a0,a1,a2,i;
   if (object.indexOf("-")>-1) { object=object.substr(0,object.indexOf("-")); }
   ObjZ=mapz.substring(2,mapz.length);
-  if (p.name==CharName) { TokenZ=ObjZ; }
+  if (p.name==CharName) {
+    TokenZ=ObjZ;
+  }
   ObjY=Math.floor(ObjZ/MapSizeX1);
   ObjX=ObjZ-(ObjY*MapSizeX1);
   //if (mapz.charAt(0)=='2') { ObjX=ObjX+MapSizeX+1; }
@@ -967,6 +981,8 @@ function RenderObj(p, mapz) { //either merge with RefPlayers or add div name par
     CharY=ObjY+(mapz.charAt(0)>'2'?MapSizeY1:0);
     CharZ=ObjZ;
     CharObj=object;
+    //var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0;
+    //POP("RefPlayers "+Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1));
   }
 
   f1=new Function("ClickHere("+p.tz+",screen"+" TUVW".charAt(mapz.charAt(0))+");");
@@ -1267,7 +1283,8 @@ function LoadChat(a,b){
   ChatLine=a;cinput(b);
   if(!Chatting||!Chatting.metachannel){for(var t in showtab.tabs){if(showtab.tabs[t].metachannel){showtab(t);break;}}}
 }
-function slashcmd(q){var a=q.substring(1).split(" "),c=a[0],e=window.encodeURIComponent||window.escape;
+function slashcmd(q){
+var a=q.substring(1).split(" "),c=a[0],e=window.encodeURIComponent||window.escape;
 if(slashcmd.short[c]){c=slashcmd.short[c];}
 if(c=="create"||c=="login"){clog("<font color=red>ERROR: You must be logged out to "+q+"</font>",Chatting.log);return"refresh";}
 if(c=="?"||c=="help"){slashcmd.help(a[1]);return"refresh";}
@@ -1276,8 +1293,8 @@ if(c=="char"){return"char&d="+a[1];}
 if(c=="drop"&&a.length==2){return"drop&j="+(a[1].indexOf("-")>=0?a[1]:isNaN(a[1])?CharInven.indexOf(a[1].charAt(0)=="^"?a[1].substring(1):a[1])/2+"-"+a[1]:a[1]+"-"+CharInven.substring(a[1]*2,a[1]*2+2));}
 a.shift();
 if(c=="add"){
-if(a.length==1){a=a[0].split("-");}
-if(a.length>1&&timenames[a[1]]){a[1]=timenames[a[1]];}
+  if(a.length==1){a=a[0].split("-");}
+  if(a.length>1&&timenames[a[1]]){a[1]=timenames[a[1]];}
 }
 if(c=="chat"){return"chat&j="+Chatting.metachannel+"&q="+e(a.join(" "));}//probably useless, really
 if(c=='s'&&a.length<2){a.push(30);}//default lifetime for new items
@@ -1462,11 +1479,11 @@ function ReturnFalse(){return false;}
 function Null() { }
 
 function MoveChar(d) {
-  if (TileMode) {
-    var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0;
-    NewTile=Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1);
-    POP(NewTile);
-  }
+  //if (TileMode) {
+  //  var screen=CharMapObj==screenW?3:CharMapObj==screenV?2:CharMapObj==screenU?1:0;
+  //  NewTile=Tileset[screen].charAt(CharZ*2)+Tileset[screen].charAt((CharZ*2)+1);
+  //  POP(NewTile);
+  //}
 }
 
 
@@ -1543,11 +1560,11 @@ function DisplayInven() {
 
 //view-menu
 function RefreshInven() {
-  RInven=0; a=100-CharH;
+  RInven=0;  if (!CharH) { CharH=0; } a=100-CharH;
   SB=CharName+'<p>Health: <img src="'+DirItem+'/OZn.gif" height=12 width='+CharH+'><img src="'+DirItem+'/OZo.gif" height=12 width='+a+'>';
   if (CharInven.indexOf("Zd")>-1) { SB=SB+"<br>CharMap: "+CharMap+"-"+CharZ; }  
   SB=SB+"<p>"+DisplayInven();
-  SB=SB+'<p><a href="javascript:showtab(\'default\')">Logs</a> &nbsp; <a href="javascript:ToDo=\'logout\';POP(\'Logging out...\');">Logoff</a>';
+  SB=SB+'<p><a href="javascript:showtab(\'default\')">Logs</a> &nbsp; <a href="javascript:ToDo=\'reset\';POP(\'Resetting...\');">Reset</a>  &nbsp; <a href="javascript:ToDo=\'logout\';POP(\'Logging out...\');">Logoff</a>';
   POP(SB);
 }
 
@@ -1717,7 +1734,56 @@ function NPCJoe(a) {
       Game=Game+"<p><a href='javascript:NPCJoe(1);'>What is going on here??</a><p>";
     }
   }
+  POVER(Game);
 }
+
+function FARMHOUSE(a) {
+  Game="<center><p><font color=#006000><b>Joe:</b></font><p>";
+  if (a==1) {
+    Game=Game+"Tomato";
+  } else {
+    Game=Game+"We have seeds<br>you can plant.<p>";
+    Game=Game+"<p><a href='javascript:FARMHOUSE(1);'>Tomato</a><p>";
+  }
+  POVER(Game);
+}
+function CLOTHES(a) {
+ if (a==0) {
+  b=InitalObj.substring(0,1);
+  t="<p align=center>Select Clothes:<p align=center>";
+  if (CharMap=="B2e" || CharMap=="A2e") {
+   t=t+"<a href=javascript:Null(); onmousedown=javascript:CLOTHES(\"1\");><img src="+DirChar+"/CHR"+b+"1R.gif border=0 height=48 width=48></a>";
+   t=t+"<a href=javascript:Null(); onmousedown=javascript:CLOTHES(\"2\");><img src="+DirChar+"/CHR"+b+"2R.gif border=0 height=48 width=48></a>";
+   t=t+"<a href=javascript:Null(); onmousedown=javascript:CLOTHES(\"3\");><img src="+DirChar+"/CHR"+b+"3R.gif border=0 height=48 width=48></a>";
+   t=t+"<a href=javascript:Null(); onmousedown=javascript:CLOTHES(\"4\");><img src="+DirChar+"/CHR"+b+"4R.gif border=0 height=48 width=48></a>";
+   t=t+"<a href=javascript:Null(); onmousedown=javascript:CLOTHES(\"5\");><img src="+DirChar+"/CHR"+b+"5R.gif border=0 height=48 width=48></a>";
+   t=t+"<br><img src="+DirTile+"/BLANK.gif height=32 width=8>";
+   t=t+"<img src="+DirItem+"/OQ3.gif height=32 width=32><img src="+DirTile+"/BLANK.gif height=32 width=16>";
+   t=t+"<img src="+DirItem+"/OQ3.gif height=32 width=32><img src="+DirTile+"/BLANK.gif height=32 width=16>";
+   t=t+"<img src="+DirItem+"/OQ3.gif height=32 width=32><img src="+DirTile+"/BLANK.gif height=32 width=16>";
+   t=t+"<img src="+DirItem+"/OQ4.gif height=32 width=32><img src="+DirTile+"/BLANK.gif height=32 width=16>";
+   t=t+"<img src="+DirItem+"/OQ4.gif height=32 width=32><img src="+DirTile+"/BLANK.gif height=32 width=8>";
+   POP(t);
+  } else {
+   c=0;
+   if (CharMap=="E4e") { c=65; d=70; e="Q3"; }
+   if (CharMap=="C7") { c=70; d=75; e="Q4"; }
+   if (c) {
+    for (i=c; i<d; i++) {
+     t=t+"<a href=javascript:Null(); onmousedown=javascript:CLOTHES(\""+String.fromCharCode(i)+"\");><img src="+DirChar+"/CHR"+b+String.fromCharCode(i)+"R.gif border=0 height=48 width=48></a>";
+    }
+    t=t+"<br>";
+    for (i=c; i<d; i++) {
+     t=t+"<img src="+DirItem+"/O"+e+".gif height=32 width=32><img src="+DirTile+"/BLANK.gif height=32 width=16>";
+    }
+   }
+   POP(t);
+  }
+ } else {
+  HPOP();
+  ToDo="C=C&J="+InitalObj.substring(0,2)+a;
+ }
+}  
 
 
 

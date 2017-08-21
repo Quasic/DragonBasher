@@ -223,5 +223,6 @@ case "TPORT": return "Teleport"; break;
 case "CART": return "Cart"; break;
 case "DOOR": return "Door"; break;
 case "FOUNTAIN": return "Fountain"; break;
+case "FARMHOUSE": return "Farm House"; break;
 default: return "ItemID  "+a; break;
 }}

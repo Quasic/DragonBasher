@@ -1,11 +1,8 @@
 ## external, refresh all data (main loop)
 $version="1.0";
-
 ## if called with $player{'ts'}<0 will bypass the cache, used by login.pl
-
-do "loadmap.pl";
-
 ## get maps player is on
+if (!$loadmap) { do "loadmap.pl"; }
 $a1=substr($player{'map'},0,1); $b1=substr($player{'map'},1,1);
 if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
   print "pop=Invalid map $a1$b1";
@@ -27,7 +24,7 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
     }
   }
   opendir(DIR,"$datadir/static/$map/"); @data=readdir(DIR); closedir(DIR);
-  @static=('','','','')
+  @static=('','','','');
   foreach $line (@data){
     chomp($line);
     if (length($line)<3) { next; }
@@ -154,10 +151,10 @@ sub items {
   # $token="[name] [expires] [z]";
   # $items.=$token[0].sprintf("%02x", $token[3]);
 
-  if ($_[0] eq "1") { $dir="$datadir/dynamic/$map1"; }
-  if ($_[0] eq "2") { $dir="$datadir/dynamic/$map2"; }
-  if ($_[0] eq "3") { $dir="$datadir/dynamic/$map3"; }
-  if ($_[0] eq "4") { $dir="$datadir/dynamic/$map4"; }
+  if ($_[0] eq "1") { $dir="$datadir/dynamic/$map1"; open (FILE, "$datadir/maps/$map1/t.txt"); $tileset=<FILE>; close (FILE); }
+  if ($_[0] eq "2") { $dir="$datadir/dynamic/$map2"; open (FILE, "$datadir/maps/$map2/t.txt"); $tileset=<FILE>; close (FILE); }
+  if ($_[0] eq "3") { $dir="$datadir/dynamic/$map3"; open (FILE, "$datadir/maps/$map3/t.txt"); $tileset=<FILE>; close (FILE); }
+  if ($_[0] eq "4") { $dir="$datadir/dynamic/$map4"; open (FILE, "$datadir/maps/$map4/t.txt"); $tileset=<FILE>; close (FILE); }
 
   foreach $line (@data) {
     chomp($line);

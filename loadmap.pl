@@ -1,7 +1,6 @@
 ## internal, loads map into memory
 ## Note: not currently to be used with city maps (Aa-Az-Za-Zz) which loadmap says are invalid, but handles 3-character map codes
-$version=1.0;
-
+$version=1.0; $loadmap=1;
 sub loadmap {
   ## validate $map as capital letter and numeral 
   ## use below sub if map is correct, for performance
