@@ -16,6 +16,8 @@
 #
  
 use CGI::Carp qw( fatalsToBrowser );
+use File::Basename; 
+use lib dirname(__FILE__); # Add the parent directory to the @INC
 $| = -1;
 require "11-config.pl";
 $cstamp=time(); $timestamp=sprintf("%08x", $cstamp);
