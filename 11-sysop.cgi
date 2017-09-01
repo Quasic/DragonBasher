@@ -12,6 +12,12 @@
 # http://creativecommons.org/licenses/by-nc/2.0/
 #
 use CGI; use CGI::Carp qw( fatalsToBrowser ); use File::Copy qw(copy); no warnings "all"; $| = -1; 
+if(-e './11-dragon.cgi'){
+  $cgidir='.';
+}else{
+  #extract $cgidir from $0 or __FILE__, etc.?
+}
+if($INC[0] ne $cgidir){ unshift(@INC,$cgidir);}
 require "11-config.pl";
 $ver="1.0";
 print "Content-type: text/html\n";
