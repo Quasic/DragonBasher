@@ -15,8 +15,16 @@
 # not start with the letters npc
 #
  
-use CGI::Carp qw( fatalsToBrowser );
+BEGIN{eval{require CGI::Carp;CGI::Carp->import("fatalsToBrowser");}}
 $| = -1;
+BEGIN{
+if(-e './11-dragon.cgi'){
+  $cgidir='.';
+}else{
+  # TODO extract $cgidir from $0 or __FILE__, etc.?
+}
+if($INC[0] ne $cgidir){unshift(@INC,$cgidir)}
+}
 require "11-config.pl";
 $cstamp=time(); $timestamp=sprintf("%08x", $cstamp);
 srand();
