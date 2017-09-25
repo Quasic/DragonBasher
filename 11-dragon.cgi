@@ -21,7 +21,8 @@ BEGIN{
 if(-e './11-dragon.cgi'){
   $cgidir='.';
 }else{
-  # TODO extract $cgidir from $0 or __FILE__, etc.?
+  require FindBin;
+  $cgidir=$FindBin::Bin;
 }
 if($INC[0] ne $cgidir){unshift(@INC,$cgidir)}
 }
