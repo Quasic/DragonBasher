@@ -5,4 +5,6 @@ One thing about Perl and me is that I do not use the "strict" variable settings 
 
 The other thing to keep in mind is that I don't like using Perl "modules", while these make things quick and easy for the programmer, they also add server load ... plus, they don't work with scaled down versions of Linux such as DSL (Damn Small Linux) ... DSL was used on the Fordana server and it is not out of the question that I may want to setup another such home server for 'dragon'.
 
- - Joe
+Thanks for helping!
+
+ -Joe
