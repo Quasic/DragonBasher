@@ -69,32 +69,6 @@ if (!$filename) {
   exit;
 }
 
-require "player.pl";
-
-if ($form{'c'} eq "create")   {
-  do "create.pl"
-} else {
-
-  if ($filename eq "sysop") {
-    ## special processing required for sysop account:
-    ## server name = player name that has sysop access,
-    ## thus password needs to be re-loaded from that player file
-    if ($server) {
-      open (FILE,"$datadir/11-dragon/passwords/$server.txt"); chomp ($playerpass=<FILE>); close FILE;
-      if ($pswd ne $playerpass) { print "error=Password mismatch\n"; }
-    } else {
-      ## no server, so no login ... yes?? security check this 
-    }
-  } else { 
-    if (-e "$datadir/11-dragon/passwords/$filename.txt") {
-      open (FILE,"$datadir/11-dragon/passwords/$filename.txt"); chomp ($playerpass=<FILE>); close FILE;
-      if ($pswd ne $playerpass) { print "error=Password mismatch\n"; }
-    } else {
-      print "error=Player file does not exist\n";
-    }
-  }
-}
-
 if ($server eq "" or $server eq '11-dragon') {
   ## display list of servers - can use dragon.htm as client for this purpose
   #open dir, send s= for each subdir except 11-dragon
@@ -116,6 +90,30 @@ if (-e "$datadir") {} else {
 if ($error) {
   print "error=$error";
 } else {
+  if ($form{'c'} eq "create")   {
+    do "create.pl"
+  } else {
+  
+    if ($filename eq "sysop") {
+      ## special processing required for sysop account:
+      ## server name = player name that has sysop access,
+      ## thus password needs to be re-loaded from that player file
+      if ($server) {
+        open (FILE,"$datadir/11-dragon/passwords/$server.txt"); chomp ($playerpass=<FILE>); close FILE;
+        if ($pswd ne $playerpass) { print "error=Password mismatch\n"; }
+      } else {
+        ## no server, so no login ... yes?? security check this 
+      }
+    } else { 
+      if (-e "$datadir/11-dragon/passwords/$filename.txt") {
+        open (FILE,"$datadir/11-dragon/passwords/$filename.txt"); chomp ($playerpass=<FILE>); close FILE;
+        if ($pswd ne $playerpass) { print "error=Password mismatch\n"; }
+      } else {
+        print "error=Player file does not exist\n";
+      }
+    }
+  }
+  require "player.pl";
   &loadplayer($filename);
   # main loop starts here
   # execute movement commands first
