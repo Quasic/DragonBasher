@@ -36,7 +36,7 @@ sub loadvalidmap { #use this if map code is already verified, for better perform
 }
 sub randmap { #generate
       $tileset="";
-      for ($i=0; $i<(14*10)*4; $i++) {
+      for ($i=0; $i<($MapSizeX+1)*($MapSizeY+1); $i++) {
         $a=int(rand(100));
         $tile="Ua";
         #if ($a>94) { $tile="Gg"; }

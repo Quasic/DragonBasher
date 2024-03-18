@@ -9,7 +9,7 @@ $b1=substr($player{'map'},1,1);
 
 #print "pop=$player{'map'} - $a1.$b1 - $a2.$b2\n";
 
-if($b1 gt '9'){#city
+if($b1 gt $MapEdgeX){#city
   $map="$a1$b1";
   #this checks $y, no need to check $x
   $z=$player{'z'}<$MapHigh*$MapWide?$player{'z'}:$MapHigh*$MapWide;

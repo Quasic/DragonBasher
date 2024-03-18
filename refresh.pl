@@ -49,7 +49,7 @@ if($a1 lt 'A'||$a1 gt $MapEdgeY||$b1 lt '0'||($b1 gt $MapEdgeX&&$b1 lt 'a')){
         do "token.pl";
 	    if (!-e "$datadir/maps/$map/t.txt") {
           $tileset="";
-          for ($i=0; $i<(14*10)*4; $i++) {
+          for ($i=0; $i<($MapSizeX+1)*($MapSizeY+1); $i++) {
             $tile="Ua"; #default tile for city
             $tileset.="$tile";
           }
