@@ -50,6 +50,7 @@ century:3110400000};
 
 MapSizeX1=MapSizeX+1; // # of tiles across each screen
 MapSizeY1=MapSizeY+1; // $ of tiles down each screen
+TotalTiles=MapSizeY1*MapSizeX1;
 
 //TopYPos=12;
 //TopXPos=16;
@@ -156,7 +157,6 @@ RInven=0;
 
 Map2X=MapSizeX1*32;
 Map2Y=MapSizeY1*32;
-TotalTiles=MapSizeY1*MapSizeX1;
 
 MoveX=0;
 MoveY=0;
@@ -194,7 +194,7 @@ scroller=$($.parseHTML("<DIV />"))
 .appendTo(document.body);
 
 //map
-if(typeof Tileset=="undefined"){Tileset=(function(){var r="",i,m=["Gg","Ge","Gb","Gd","Og","Re"];for(i=0;i<1120;i++){r+=m[Math.floor(Math.random()*100)]||"Ga";}return[r.substring(0,280),r.substring(280,560),r.substring(560,840),r.substring(840,1120)];})();}
+if(typeof Tileset=="undefined"){Tileset=(function(){var r="",i,m=["Gg","Ge","Gb","Gd","Og","Re"];for(i=0;i<TotalTiles*4;i++){r+=m[Math.floor(Math.random()*100)]||"Ga";}return[r.substring(0,TotalTiles),r.substring(TotalTiles,TotalTiles*2),r.substring(TotalTiles*2,TotalTiles*3),r.substring(TotalTiles*3,TotalTiles*4)];})();}
 screenV=SetTiles(0,1,Tileset[2]);
 screenW=SetTiles(1,1,Tileset[3]);//reverse order to avoid IE zindex issues
 screenT=SetTiles(0,0,Tileset[0]);
@@ -256,7 +256,7 @@ for (i=0; i<MapSizeY1; i++) {
   for (j=0; j<MapSizeX1; j++) {
     T=document.createElement("IMG");
     T.height=T.width=32;
-    T.src=DirTile+"/"+(m.substring(z*2,(z++)*2+2)||"G0")+".png";
+    T.src=DirTile+"/"+(m.substring(z*2,(z++)*2+2)||"Ga")+".png";
     T.onerror=TileImgErr;
     T.className="tile";
     T.onmousedown=new Function("ClickHere("+(i*MapSizeX1+j)+",this.parentNode)");
