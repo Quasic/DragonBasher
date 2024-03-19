@@ -66,6 +66,6 @@ awk -v width="${width:-13}" -v height="${height:-7}" -v gfx="$gfx" -v DirBuild="
 }{ #for all other lines
  gsub(/\[htmlurl\]\/11-gfx/,gfx)
  gsub(/\[htmlurl\]/,".")
- gsub(/(<script src=([^ ]*|"[^"]*|'\''[^'\'']*)jquery-[^ ]*.js[^>]*><\/script>)/,"&\n<script src=./server1.js></script>")
+ gsub(/(<!-- done loading jQuery -->)/,"&\n<script src=./server1.js></script>")
  print
 }' client.htm >client1.htm

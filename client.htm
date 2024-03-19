@@ -1,6 +1,18 @@
 <html><head><title>Dragon Client</title>
 <script src="[htmlurl]/jquery-3.7.1.min.js" language="JavaScript"></script>
 <script language="JavaScript">
+if(window.$&&$('script'))jQver=$('script')[0].src.match(/jquery-([0-9.]+)\./)[1]+" (Modern)";
+else document.write('<script src="./jquery-1.12.4.NOhtmlPrefilter.min.js" language="JavaScript"></scr'+'ipt>');
+</script>
+<script language="JavaScript">
+if(window.$&&$('script'))jQver="1.12.4 (recommended legacy)"
+else{
+ jQver="1.11.2 (old legacy)"
+ document.write('<script src="./jquery-1.11.2.NOhtmlPrefilter.min.js" language="JavaScript"></scr'+'ipt>');
+}
+</script>
+<!-- done loading jQuery -->
+<script language="JavaScript">
 
 //
 // Queville v11.0, Land of the Dragon Basher
@@ -186,7 +198,7 @@ zdivs=["builddiv","enemydiv","plyrdiv","itemdiv","sdiv"];
 for(i=0;i<zdivs.length;i++){zdivs[zdivs[i]]=MapSizeY1*MapSizeX1+i;}
 
 //errlog/welcome
-if(window.$&&$("body")){}else{t=document.getElementById("PopUp");t.innerHTML='Sorry. This game requires jQuery version 1.11.2, but <a href="http://jquery.com/browser-support/">your browser doesn\'t support it</a>. :(';t.style.visibility="visible";}
+if(window.$&&$("body")){}else{t=document.getElementById("PopUp");t.innerHTML='Sorry. This game requires jQuery version 1.11.2 or greater, but <a href="http://jquery.com/browser-support/">your browser doesn\'t support it</a>. :(';t.style.visibility="visible";}
 
 //map
 scroller=$($.parseHTML("<DIV />"))
@@ -531,6 +543,7 @@ function HitIt() {
           if (SVar=="login"){
             CharName=SValue; POP(SValue+" logged in."); PopForce="hidden"; PopAlign="char"; cinput();
             for(var t in showtab.tabs){ if(showtab.tabs[t].log){ clog(showtab.tabs[t].loginHTML&&showtab.tabs[t].loginHTML()||"Welcome to the "+ServerName+" server, "+CharName+"!",showtab.tabs[t].log); }}
+			clog("Using jQuery version "+jQver,"POPLOG");
             document.onkeydown=ProcessInput; document.onkeypress=CancelKey; document.onkeyup=CancelKey;
             parent.document.onkeydown=ProcessInput; parent.document.onkeypress=parent.document.onkeyup=CancelKey;
             setTimeout('MainLoop();',subtick); // starts repeating loop
@@ -1396,34 +1409,34 @@ nsEdge={left:0, right:0,height:edge,cursor:"ns-resize"},
 seEdge={left:0,bottom:0,backgroundColor:"#70eF70",position:"absolute",overflow:"hidden"},
 pane={position:"absolute",backgroundColor:"#ffffd0",cursor:"auto",overflow:"hidden"},
 log={left:edge,top:a[1],right:a[1]};
-showtab.main=$('<DIV id=CHAT/>').css({visibility:"hidden",position:"absolute",backgroundColor:"#80FF80",cursor:"move",zIndex:255,fontFamily:"arial",fontWeight:"bold",color:"navy"})
-.append(o.n=$("<div/>").css(nsEdge).css(nwEdge).on("mousedown",{h:-1},ChatResize))
-.append(o.s=$("<div/>").css(nsEdge).css(seEdge).on("mousedown",{h:1},ChatResize))
-.append(o.e=$("<div/>").css(ewEdge).css(seEdge).on("mousedown",{w:-1},ChatResize))
-.append(o.w=$("<div/>").css(ewEdge).css(nwEdge).on("mousedown",{w:1},ChatResize))
-.append(showtab.menu=$("<div/>").css(pane).css({top:a[0],left:a[0],height:line,color:"black"}))
-.append(showtab.redx=$("<div/>").css(pane).css({top:a[0],height:line,right:a[0],color:"red"}).html('<a href="javascript:showtab.Logout()">Logoff</a> | <a href="javascript:showtab.close()">Close</a>'))
-.append(showtab.tabs.Global.log=$('<div id="GLOBALLOG"/>').css(pane).css(log).css({bottom:a[1]}))
-.append(showtab.tabs.Team.log=$('<div id="TEAMLOG"/>').css(pane).css(log).css({bottom:a[1]}))
-.append(showtab.tabs.Notices.log=$('<div id="POPLOG"/>').css(pane).css(log).css({bottom:a[0]}))
-.append(showtab.tabs.Game.log=$('<div id="GAMEPOP"/>').css(pane).css(log).css({bottom:a[0]}))
+showtab.main=$('<DIV id=CHAT />').css({visibility:"hidden",position:"absolute",backgroundColor:"#80FF80",cursor:"move",zIndex:255,fontFamily:"arial",fontWeight:"bold",color:"navy"})
+.append(o.n=$("<div />").css(nsEdge).css(nwEdge).on("mousedown",{h:-1},ChatResize))
+.append(o.s=$("<div />").css(nsEdge).css(seEdge).on("mousedown",{h:1},ChatResize))
+.append(o.e=$("<div />").css(ewEdge).css(seEdge).on("mousedown",{w:-1},ChatResize))
+.append(o.w=$("<div />").css(ewEdge).css(nwEdge).on("mousedown",{w:1},ChatResize))
+.append(showtab.menu=$("<div />").css(pane).css({top:a[0],left:a[0],height:line,color:"black"}))
+.append(showtab.redx=$("<div />").css(pane).css({top:a[0],height:line,right:a[0],color:"red"}).html('<a href="javascript:showtab.Logout()">Logoff</a> | <a href="javascript:showtab.close()">Close</a>'))
+.append(showtab.tabs.Global.log=$('<div id="GLOBALLOG" />').css(pane).css(log).css({bottom:a[1]}))
+.append(showtab.tabs.Team.log=$('<div id="TEAMLOG" />').css(pane).css(log).css({bottom:a[1]}))
+.append(showtab.tabs.Notices.log=$('<div id="POPLOG" />').css(pane).css(log).css({bottom:a[0]}))
+.append(showtab.tabs.Game.log=$('<div id="GAMEPOP" />').css(pane).css(log).css({bottom:a[0]}))
 /*
 <div id="BALLOONLOG" class="left0 top1 right0" style="bottom:50%;overflow:auto">List of things characters have said using these balloons</div>
 <div id="BALLOONS" class="left0 bottom0 right0" style="top:50%;overflow:auto;border-top:1px dotted green">List of things player can say above head</div>
 */
 .append(showtab.scrollup=$('<img id="SCROLLUP" src="[htmlurl]/11-gfx/CHATUP.gif">').css(pane).css({height:line,width:line,top:a[1],right:a[0],cursor:"n-resize"}).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()-showtab.scrollup.height());ScrollbarUpdate();}}))
 .append(
-	showtab.scrollbar=$('<div id="SCROLLBAR"/>')
+	showtab.scrollbar=$('<div id="SCROLLBAR" />')
 	.css(pane).css({cursor:"ns-resize",width:line,top:a[2],right:a[0],bottom:a[2]})
 	.append(
-		showtab.scrollbox=$('<div id="SCROLLBOX"/>')
+		showtab.scrollbox=$('<div id="SCROLLBOX" />')
 		.css({position:"absolute",right:0,width:line,backgroundColor:"#80ff80",cursor:"ns-resize"})
 		.on("mousedown",function(E){var b=showtab.scrollbox,min=0,max=$(b[0].parentNode).height()-b.height()/*-end*/,d=Chatting.log;return d?Drag(E,0,b.position().top,function(x,y){b[0].style.top=y+"px";d.scrollTop((d.prop("scrollHeight")-d.height())*(y-min)/(max-min));},0,min,0,max,1,1):false;})
 	).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()+Math.max(1,Chatting.log.height()-showtab.scrollup.height())*(e.pageY<showtab.scrollbox.offset().top?-1:1));ScrollbarUpdate();}})
 )
 .append(showtab.scrolldn=$('<img id="SCROLLDN" src="[htmlurl]/11-gfx/CHATDOWN.gif">').css(pane).css({height:line,width:line,right:a[0],bottom:a[1],cursor:"s-resize"}).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()+showtab.scrolldn.height());ScrollbarUpdate();}}))
 .append($('<img id="RESIZEBOX" src="[htmlurl]/11-gfx/t/If.png">').css(pane).css({height:line,width:line,bottom:a[0],right:a[0],cursor:"nwse-resize"}).on("mousedown",{w:1,h:1},ChatResize))
-.append(showtab.chatinput=$('<div id="CHATINPUT"/>').css(pane).css({height:line,left:a[0],bottom:a[0],right:a[1]}))
+.append(showtab.chatinput=$('<div id="CHATINPUT" />').css(pane).css({height:line,left:a[0],bottom:a[0],right:a[1]}))
 .width(Cookie.get("chatwidth")||Math.round(Map2X*2*.8))
 .height(Cookie.get("chatheight")||Math.round(Map2Y*2*.6))
 .appendTo(parent.document.body)
