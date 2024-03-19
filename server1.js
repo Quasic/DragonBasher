@@ -274,7 +274,7 @@ console.log(cstamp,"tele",mapz);
 				print+="pop=/newitem "+j[0]+" "+j[1]+" "+j[2]+"\n";
 				if(player.inven.substr(f,2)=='Za'){
 					if(j[1].match(/^[A-Z][0-9a-z]$/)){
-						player.inven=player.inven.substr(0,f)+j[1]+Number(cstamp+j[2]).toString(16)+player.inven.substr(f+10);
+						player.inven=player.inven.substr(0,f)+j[1]+percent0_x(8,+cstamp+j[2])+player.inven.substr(f+10);
 						inv();
 						print+="dinv=1\n";
 					}else print+="pop=mismatch\n";
@@ -341,7 +341,7 @@ console.log(cstamp,"tele",mapz);
 					//one.pl
 					var i,inv='',estamp,invitem;
 					for (i=0;i<NumInven;i++){
-						estamp=parseInt("0x"+player.inven.substr(i*10+2,8)).toString(16);
+						estamp=parseInt("0x"+player.inven.substr(i*10+2,8));
 						invitem=player.inven.substr(i*10,2);
 						if(estamp&&cstamp>estamp){
 							print+="pop=^"+invitem+" expired\n";
@@ -455,10 +455,10 @@ console.log(cstamp,"players",map,q,t);
 						//TODO: g-*.pl
 						mapdynamic[map][i]=undefined;
 						delete mapdynamic[map][i];
-					}else if(q)it[j]+=t[0]+Number(t[2]).toString(16);
+					}else if(q)it[j]+=t[0]+percent0_x(2,t[2]);
 					else{
 						z=zconv(t[2]);
-						it[z[0]]+=t[0]+Number(t[2]).toString(16);
+						it[z[0]]+=t[0]+percent0_x(2,t[2]);
 					}
 				}
 				for(i=0;i<4;i++)if(it[i]||!q)print+="i"+i+"="+st[i]+"\n";
@@ -534,4 +534,7 @@ console.log(cstamp,"token.out",player.token);
 			print+="inv="+v+"\n";
 		}
 	};
+	function percent0_x(c,n){
+		return("00000000"+Number(n).toString(16)).substr(-c);
+	}
 })($);
