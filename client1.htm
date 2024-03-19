@@ -1581,7 +1581,7 @@ function DisplayInven() {
 
 //view-menu
 function RefreshInven() {
-  RInven=0;  if (!CharH) { CharH=0; } a=100-CharH;
+  RInven=0;  if (!window.CharH) { CharH=0; } a=100-CharH;
   SB=CharName+'<p>Health: <img src="'+DirItem+'/OZn.gif" height=12 width='+CharH+'><img src="'+DirItem+'/OZo.gif" height=12 width='+a+'>';
   if (CharInven.indexOf("Zd")>-1) { SB=SB+"<br>CharMap: "+CharMap+"-"+CharZ; }  
   SB=SB+"<p>"+DisplayInven();
