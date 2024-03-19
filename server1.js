@@ -93,7 +93,7 @@ console.log(cstamp,form);
 				xf.refresh();
 				inv();
 				if("new"===player.object.substr(0,3))print+="RChar="+player.object+"\n";
-				print+="login="+player.name+"\npop=Note: This is a single-server single-player demo version.<BR>Browser storage is used to hold map edits and player data, which may be cleared automatically.<BR>You may use the hidden commands:<BR>/key to become a sysop.<BR>/debug to show secret info about your character and items in the Notices tab<BR>/share to show map changes for sharing or saving outside of browser storage in the Notices tab\n";
+				print+="login="+player.name+"\npop=Note: This is a single-server single-player demo version.<BR>Browser storage is used to hold map edits and player data, which may be cleared automatically.<BR>In addition to commands listed by the /help command, you may use the following hidden commands:<BR>/key makes you a sysop so you can use the rest of these commands<BR>/debug shows secret info about your character and items in the Notices tab<BR>/share shows map changes for sharing or saving outside of browser storage in the Notices tab<BR>/delete deletes all statics on your current tile<BR>/grass destroys your current area\n";
 			},
 			logout:function(){
 				detoken();
