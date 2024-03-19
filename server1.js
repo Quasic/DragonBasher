@@ -4,7 +4,12 @@
 
 //When you get within scrolldist tiles of edge, it scrolls and pauses unless scrollpause<0; longer pause if scrollpause>0
 (function($){
-	var player={},maptoken={},mapts={},mapdynamic={},initstamp=Math.floor(new Date/60000)-1,MapEdgeY='Z',MapEdgeX='9',scrolldist=4,scrollpause=1,NumInven=24;
+	var MapEdgeY='Z',
+	MapEdgeX='9',
+	scrolldist=4,
+	scrollpause=1,
+	NumInven=24,
+	player={},maptoken={},mapts={},mapdynamic={},initstamp=Math.floor(new Date/60000)-1,nop=function(){};
 	function loadmap(map){
 		//no validity check for 1 player
 		//return if exists in order: saved map, default map, or generate random map
@@ -259,7 +264,47 @@ console.log(cstamp,"tele",mapz);
 			exam:function(){},
 			get:function(){},
 			drop:function(){},
-			"static":function(){},
+			"static":function(){
+				var f,
+				s=loadstatics(player.tmap).split("*");
+				for(var codetsz,i=0;i<s.length;i++){
+					codetsz=s[i].split(" ");
+					if(player.tz==codetsz[2]){
+						if(codetsz[0].length==2){
+							if(codetsz[0].substr(0,1)=="Z"){
+								({
+									Zf:function(){},//TODO static-Zf.pl
+									Zg:function(){},//...
+									Zh:function(){},//...
+									Zi:function(){},//...
+									Zj:function(){}//TODO static-Zj.pl
+								}[codetsz[0]]||nop)();
+							}else{
+								f=player.inven.indexOf("Za");
+								estamp=percent0_x(8,cstamp+parseInt("0x"+codetsz[1]));
+								player.inven=player.inven.substr(0,f)+codetsz[0]+estamp+player.inven.substr(f+10);
+								inv();
+								print+="dinv=1v\n";
+							}
+						}else{
+							if(codetsz[0].substr(0,3)==="NPC"){
+								//npc
+							}else{
+								({
+									TPORT:function(){},//TODO: static-tport.pl
+									WELL:function(){},//TODO: static-well.pl
+									FOUNTAIN:function(){},//TODO: static-fountain.pl
+									FARMHOUSE:function(){},//TODO: static-farmhouse.pl
+									CLOTHES:function(){}//TODO: static-clothes.pl
+								}[codetsz[0]]||function(){
+									print+="pop=invalid static object\n";
+									})();
+							}
+						}
+					}
+				}
+				xf.refresh();
+			},
 			"delete":function(){
 				if(player.inven.indexOf("Zd")<0)return print+="pop=Need Sysop Key\n";//perl checked for Zc
 				print+="pop=delete\n";
@@ -500,7 +545,13 @@ console.log(cstamp,"players",map,q,t);
 					t=i.split(" ");
 					t[1]=parseInt("0x"+t[1]);
 					if(cstamp>t[1]){
-						//TODO: g-*.pl
+						({
+							Ia:function(){},//TODO: g-Ia.pl
+							Fa:function(){},//TODO: g-Fa.pl
+							Fb:function(){},//TODO: g-Fb.pl
+							Fc:function(){},//TODO: g-Fc.pl
+							Fd:function(){}//TODO: g-Fd.pl
+						}[t[0]]||nop)();
 						mapdynamic[map][i]=undefined;
 						delete mapdynamic[map][i];
 					}else if(q)it[j]+=t[0]+percent0_x(2,t[2]);
