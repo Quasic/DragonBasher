@@ -32,7 +32,7 @@ if ($player{'inven'}=~/Zd/) {
       next if ($item=~m/^\./);
       next unless (substr($item,-4) eq ".txt");
       $item =~ s/.txt//;
-      ($ts, $code, $z)=split(/ /,$item);
+      ($code, $ts, $z)=split(/ /,$item);
       if ($player{'tz'} eq $z) {
         unlink "$datadir/static/$player{'tmap'}/$item.txt";
         print "pop=$code deleted\n"; $j="";

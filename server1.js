@@ -264,15 +264,15 @@ console.log(cstamp,"tele",mapz);
 				if(player.inven.indexOf("Zd")<0)return print+="pop=Need Sysop Key\n";//perl checked for Zc
 				print+="pop=delete\n";
 				var s=loadstatics(player.tmap).split("*");
-				for(var tscodez,i=0;i<s.length;i++){
-					tscodez=s[i].split(" ");
-					if(player.tz==tscodez[2]){
+				for(var codetsz,i=0;i<s.length;i++){
+					codetsz=s[i].split(" ");
+					if(player.tz==codetsz[2]){
 						//removed form.j check, so deletes all items on that location
 						s[i]="";
-						print+="pop="+tscodez[1]+" deleted\n";
+						print+="pop="+codetsz[0]+" deleted\n";
 					}
 				}
-				Cookie.set("st"+player.tmap,s.join("*").replace(/^\*+/,"").replace(/\*+$/,"").replace(/\*\*+)/g,"*"));
+				Cookie.set("st"+player.tmap,s.join("*").replace(/^\*+/,"").replace(/\*+$/,"").replace(/\*\*+/g,"*"));
 			},
 			add:function(){
 				if(player.inven.indexOf("Zd")<0)return print+="pop=Need Sysop Key\n";
@@ -296,18 +296,18 @@ console.log(cstamp,"tele",mapz);
 				}
 				if(jdata[0]){
 					var s=loadstatics(player.tmap).split("*");
-					for(var tscodez,i=0;i<s.length;i++){
-						tscodez=s[i].split(" ");
-						if(player.tz==tscodez[2]){
+					for(var codetsz,i=0;i<s.length;i++){
+						codetsz=s[i].split(" ");
+						if(player.tz==codetsz[2]){
 							s[i]="";
-							print+="pop="+tscodez[1]+" deleted\n";
+							print+="pop="+codetsz[0]+" deleted\n";
 							jdata[0]="";
 						}
 					}
 					if(jdata[0]){
 						s[s.length]=jdata[1];
 					}
-					Cookie.set("st"+player.tmap,s.join("*").replace(/^\*+/,"").replace(/\*+$/,"").replace(/\*\*+)/g,"*"));
+					Cookie.set("st"+player.tmap,s.join("*").replace(/^\*+/,"").replace(/\*+$/,"").replace(/\*\*+/g,"*"));
 				}
 				xf.refresh();
 			},
