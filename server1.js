@@ -7,16 +7,15 @@
 	var player={},maptoken={},mapts={},mapdynamic={},initstamp=Math.floor(new Date/60000)-1,MapEdgeY='Z',MapEdgeX='9',scrolldist=4,scrollpause=1,NumInven=24;
 	function loadmap(map){
 		//no validity check for 1 player
-		var tiles;
 		//return if exists in order: saved map, default map, or generate random map
-		if(tiles=Cookie.get("map"+map))return tiles;
-		//default maps
-		tiles={
+		return Cookie.get("map"+map)||{
 			
-		};
-		if(tiles.hasOwnProperty?tiles.hasOwnProperty(map):"string"===typeof tiles[map])return tiles[map];
-		//generate random map
-		return randmap();
+		}[map]||randmap();
+	}
+	function loadstatics(map){
+		return Cookie.get("st"+map)||{
+			
+		}[map]||"";
 	}
 	function tilestamp(map){
 		return mapts[map]||initstamp;
@@ -261,8 +260,57 @@ console.log(cstamp,"tele",mapz);
 			get:function(){},
 			drop:function(){},
 			"static":function(){},
-			"delete":function(){},
-			add:function(){},
+			"delete":function(){
+				if(player.inven.indexOf("Zd")<0)return print+="pop=Need Sysop Key\n";//perl checked for Zc
+				print+="pop=delete\n";
+				var s=loadstatics(player.tmap).split("*");
+				for(var tscodez,i=0;i<s.length;i++){
+					tscodez=s[i].split(" ");
+					if(player.tz==tscodez[2]){
+						//removed form.j check, so deletes all items on that location
+						s[i]="";
+						print+="pop="+tscodez[1]+" deleted\n";
+					}
+				}
+				Cookie.set("st"+player.tmap,s.join("*").replace(/^\*+/,"").replace(/\*+$/,"").replace(/\*\*+)/g,"*"));
+			},
+			add:function(){
+				if(player.inven.indexOf("Zd")<0)return print+="pop=Need Sysop Key\n";
+				var jdata=form.j.split("-"),
+				estamp="00000000";
+				if(jdata[0].length===2){
+					if(jdata[0].substr(0,1)!="Z"){
+						estamp=percent0_x(8,jdata[1]);
+						jdata[1]=player.name;
+					}else{
+						if(jdata[0]==="Zf")jdata[1]=form.j.substr(2).replace(/-/g," ");
+					}
+				}else{
+					if(form.j.substr(0,3)==="NPC"){
+						//npc
+					}else{
+						if(jdata[0]){
+							//building
+						}
+					}
+				}
+				if(jdata[0]){
+					var s=loadstatics(player.tmap).split("*");
+					for(var tscodez,i=0;i<s.length;i++){
+						tscodez=s[i].split(" ");
+						if(player.tz==tscodez[2]){
+							s[i]="";
+							print+="pop="+tscodez[1]+" deleted\n";
+							jdata[0]="";
+						}
+					}
+					if(jdata[0]){
+						s[s.length]=jdata[1];
+					}
+					Cookie.set("st"+player.tmap,s.join("*").replace(/^\*+/,"").replace(/\*+$/,"").replace(/\*\*+)/g,"*"));
+				}
+				xf.refresh();
+			},
 			inventory:function(){
 				if(player.inven.indexOf("Zd")<0)return print+="pop=Need Sysop Key\n";
 				var f,
@@ -468,9 +516,7 @@ console.log(cstamp,"players",map,q,t);
 				j=q-1,
 				st=[];
 				//statics have default, but not generated
-				if(s=(Cookie.get("st"+map)||{
-					
-				}[map]||""))for(s=s.split("*"),i=0;i<s.length;i++){
+				if(s=loadstatics(map))for(s=s.split("*"),i=0;i<s.length;i++){
 					t=s[i].split(" ");
 					if(q)st[j]+=t[0]+"="+t[2];
 					else{
