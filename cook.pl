@@ -6,7 +6,7 @@ if ($fire<1) {
   print "pop=Need Fire!\n";
   $odds=0;
 } else {
-  if ($slot<24) {
+  if ($slot<$NumInven) {
     if (length($item)==2) {
       if (substr($player{'inven'},$slot*10,2) eq $item) {
         if ($player{'inven'}=~/$item/) {

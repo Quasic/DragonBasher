@@ -2,7 +2,7 @@
 
 if ($player{'inven'}=~/Ei/) {
   ($slot,$item)=split(/\-/, $form{'j'});
-  if ($slot<24) {
+  if ($slot<$NumInven) {
     if (length($item)==2) {
       if (substr($player{'inven'},$slot*10,2) eq $item) {
         open (FILE, "$datadir/maps/$player{'tmap'}/t.txt"); $tileset=<FILE>; close (FILE);

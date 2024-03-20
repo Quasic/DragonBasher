@@ -2,7 +2,7 @@
 
 ($slot,$item)=split(/\-/, $form{'j'});
 
-if ($slot<24) {
+if ($slot<$NumInven) {
   if (length($item)==2) {
     if (substr($player{'inven'},$slot*10,2) eq $item) {
       if ($item eq "Fa") { $food="Fa"; $health=4; $new="Za00000000"; }

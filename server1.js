@@ -248,20 +248,129 @@ console.log(cstamp,"tele",mapz);
 				}
 				return !a1;
 			},
-			cook:function(){},
-			eat:function(){},
-			plant:function(){},
-			match:function(){},
-			wear:function(){},
+			cook:function(){
+				var odds=[0],
+				slotitem=form.j.split("-");
+				if(!hasFire())return print+="pop=Need Fire!\n";
+				if(slotitem[0]<NumInven&&slotitem[1].length===2&&player.inven.substr(slotitem[0]*10,2)===slotitem[1]){
+					odds={
+						Ga:[90,"Ja"],//minnows
+						Gd:[90,"Jd"],//crab
+						Ge:[90,"Je"]//carp
+					}[slotitem[1]]||[0]
+				}
+				if(odds[0]){
+					slotitem[0]*=10;
+					print+="pop=slot "+slotitem[0]+"\n";
+					if(Math.floor(Math.random()*100)<odds[0]){
+						player.inven=player.inven.substr(0,slotitem[0])+odds[1]+newstamp(odds[1])+player.inven.substr(slotitem[0]+10);
+					}else{
+						player.inven=player.inven.substr(0,slotitem[0])+"Za00000000"+player.inven.substr(slotitem[0]+10);
+						print+="pop=Burnt!\n";
+					}
+					inv();
+					print+="dinv=1\n";
+				}
+			},
+			eat:function(){
+				var food,
+				slotitem=form.j.split("-");
+				if(slotitem[0]<NumInven&&slotitem[1].length===2){
+					if(player.inven.substr(slotitem[0]*10,2)===slotitem[1]){
+						if(food={
+							Fa:[4,"Za"],
+							Fb:[4,"Fa"],
+							Fc:[4,"Fb"],
+							Fd:[4,"Fc"],
+							Ja:[1,"Za"],
+							Jd:[4,"Za"],
+							Je:[8,"Za"]
+						}[slotitem[1]]){
+							slotitem[0]*=10;
+							player.inven=player.inven.substr(0,slotitem[0])+food[1]+("Za"===food[1]?"00000000":player.inven.substr(slotitem[0]+2,8))+player.inven.substr(slotitem[0]+10);
+							inv();
+							player.h=Math.max(player.h+food[0],99);
+							print+="h="+player.h+"\ndinv=1\n";
+						}else print+="pop=Not Editable!\n";
+					}else print+="pop=No Food!\n";
+				}
+			},
+			plant:function(){
+				if(player.inven.indexOf("Ei")<0)return print+="pop=Need Water!\n";
+				var tileset,plant,
+				slotitem=form.j.split("-");
+				if(slotitem[0]<NumInven&&slotitem[1].length===2&&player.inven.substr(slotitem[0]*=10,2)===slotitem[1]){
+					tileset=loadmap(player.tmap),
+					g=tileset.substr(player.tz*2,1);
+					if(g==="F"||g==="G"){
+						if(plant={
+							Fa:["Ia",60,"Za"],
+							Fb:["Ia",60,"Fa"],
+							Fc:["Ia",60,"Fd"],
+							Fd:["Ia",60,"Fc"]
+						}[slotitem[1]]){
+							savedynamic(player.tmap,plant[0],plant[1],player.tz);
+							player.inven=player.inven.substr(0,slotitem[0])+plant[2]+("Za"===plant[2]?"00000000":player.inven.substr(slotitem[0]+2,8))+player.inven.substr(slotitem[0]+10);
+							player.inven.replace(/Ei/,"Bd");
+							inv();
+							print+="pop=Planted\n";
+						}
+					}else print+="pop=Not Here\n";
+				}
+			},
+			match:function(){
+				print+="pop=light match\n";
+				var slotitem=form.j.split("-");
+				if(slotitem[0]<NumInven&&slotitem[1].length===2&&player.inven.substr(slotitem[0]*=10,2)===slotitem[1]){
+					if(slotitem[1]==="Dj")player.inven=player.inven.substr(0,slotitem[0])+"Za00000000"+player.inven.substr(slotitem[0]+10);
+					else if(slotitem[1]==="Dk")player.inven=player.inven.substr(0,slotitem[0])+"Dj"+player.inven.substr(slotitem[0]+2);
+					else if(slotitem[1]==="Dl")player.inven=player.inven.substr(0,slotitem[0])+"Dk"+player.inven.substr(slotitem[0]+2);
+					else return;
+					inv();
+					print+="dinv=1\n";
+					savedynamic(player.tmap,"Zj",60,player.tz);
+				}
+			},
+			wear:function(){
+				if(form.j.length!==2)return;
+				var Wearing=player.object.substr(4),
+				Class=form.j.substr(0,1).replace(/[^A-Z]/g,""),
+				type=form.j.substr(1,1).replace(/[^0-9a-z]/g,"");
+				if(player.inven.indexOf(Class+type)>=0){
+					if(""!==type){
+						if("LMS".indexOf(Class)>=0){
+							Wearing.replace(/[LMS]./g,"");
+							Wearing+=Class+type;
+						}
+					}
+					player.object=player.object.substr(0,4)+Wearing;
+					print+="dinv=1\n";
+					token();
+				}
+				xf.refresh();
+			},
 			remove:function(){
 				remove();
 				print+="dinv=1\n";
 				token();
 				xf.refresh();
 			},
-			exam:function(){},
-			get:function(){},
-			drop:function(){},
+			exam:function(){
+				print+="pop=examine "+form.j+"\n";
+				var slotitem=form.j.split("-"),
+				invitem=player.inven.substr(slotitem[0]*10,2),
+				invstamp=player.inven.substr(slotitem[0]*10+2,8);
+				if(invitem===slotitem[1]){
+					invstamp=parseInt("0x"+invstamp)-cstamp;
+					print+="pop=^"+slotitem[1]+" expires in "+(invstamp>86400?Math.floor(invstamp/86400)+" days":invstamp>3600?Math.floor(invstamp/3600)+" hours":invstamp>60?Math.floor(invstamp/60)+" minutes":invstamp+" seconds")+"\n";
+				}
+			},
+			get:function(){
+				//TODO: get.pl needs glob function for statics and dynamics
+			},
+			drop:function(){
+				//TODO: drop.pl needs glob function for dynamics
+			},
 			"static":function(){
 				var f,
 				s=loadstatics(player.tmap).split("*");
@@ -541,8 +650,7 @@ console.log(cstamp,"players",map,q,t);
 				it=[];
 				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i)){
 					t=i.split(" ");
-					t[1]=parseInt("0x"+t[1]);
-					if(cstamp>t[1]){
+					if(cstamp>mapdynamic[map][i]){
 						({
 							Ia:function(){},//TODO: g-Ia.pl
 							Fa:function(){},//TODO: g-Fa.pl
@@ -552,13 +660,13 @@ console.log(cstamp,"players",map,q,t);
 						}[t[0]]||nop)();
 						mapdynamic[map][i]=undefined;
 						delete mapdynamic[map][i];
-					}else if(q)it[j]+=t[0]+percent0_x(2,t[2]);
+					}else if(q)it[j]+=t[0]+percent0_x(2,t[1]);
 					else{
-						z=zconv(t[2]);
-						it[z[0]]+=t[0]+percent0_x(2,t[2]);
+						z=zconv(t[1]);
+						it[z[0]]+=t[0]+percent0_x(2,t[1]);
 					}
 				}
-				for(i=0;i<4;i++)if(it[i]||!q)print+="i"+i+"="+st[i]+"\n";
+				for(i=0;i<4;i++)if(it[i]||!q)print+="i"+i+"="+it[i]+"\n";
 			}
 			function statics(map,q){
 				var s,i,t,z,
@@ -630,6 +738,25 @@ console.log(cstamp,"token.out",player.token);
 		}
 		function remove(){
 			player.object=player.object.replace(form.j,'');
+		}
+		function newstamp(item){
+			return percent0_x(8,cstamp+({
+				Ga:3600,//minnow
+				Gd:86400,//crab
+				Ge:86400,//carp
+				Za:0,//nothing
+				Zj:60//fire
+			}[item]||60));
+		}
+		function savedynamic(map,item,e,tz){
+			if(!mapdynamic[map])mapdynamic[map]={};
+			mapdynamic[map][item+" "+tz]=cstamp+e;
+		}
+		function hasFire(){
+			if(mapdynamic[player.tmap]&&mapdynamic["Zj "+player.tz])return true;
+			//if(player.inven.indexOf("Zj")>=0)
+			//TODO: fire.pl also drops/lights fire
+			return false;
 		}
 	};
 	function percent0_x(c,n){
