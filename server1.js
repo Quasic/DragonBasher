@@ -32,9 +32,6 @@
 		for(i=0;i<MapSizeX1*MapSizeY1*4;i++)tileset+=tiles[Math.floor(Math.random()*100)]||"Ga";//Ua for water
 		return tileset;
 	}
-	function remove(){
-		player.object=player.object.replace(form.j,'');
-	}
 	$.ajax=function(q){
 		var t=q.data.split('&'),
 		cstamp=Math.floor(new Date/60000),
@@ -59,7 +56,8 @@ console.log(cstamp,form);
 		form.n=form.n.toLowerCase();
 		if(form.n.match(/^[^a-z]/))error+="Name must start with a letter\n";
 		if(form.n.match(/^npc/))error+="Restricted player name (npc)\n";
-		form.p="********";//ignore form.p for now
+		if(!form.p.length)error+="Please enter a password.<BR>Any one will work. I often use *.<BR>It's not checked or used in this single-player version,<BR>but is required for the client to function properly.\n";
+		form.p="********";//clear any password given
 		if(!form.n)error+="Please enter username\n"
 		//skip server list
 		if(error)return q.error(form,"?",error);
@@ -629,6 +627,9 @@ console.log(cstamp,"token.out",player.token);
 			var i,v="";
 			for(i=0;i<NumInven;i++)v+=player.inven.substr(i*10,2);
 			print+="inv="+v+"\n";
+		}
+		function remove(){
+			player.object=player.object.replace(form.j,'');
 		}
 	};
 	function percent0_x(c,n){
