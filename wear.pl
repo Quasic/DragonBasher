@@ -28,6 +28,7 @@ if (length($form{'j'})==2) {
       }
     } 
 
+    $player{'object'}.='L' if length($player{'object'})<4;
     $player{'object'}=substr($player{'object'},0,4).$Wearing;
     print "dinv=1\n";
     do "token.pl";

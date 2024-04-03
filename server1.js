@@ -154,7 +154,7 @@ console.log(cstamp,"tele",mapz);
 				}
 				if(x>=0){
 					player.z=y*MapWide+x;
-					player.object=player.object.substr(0,3)+"L";
+					player.object=player.object.substr(0,3)+"L"+player.object.substr(4);
 					TickObj+="l";
 					token();
 				}
@@ -186,7 +186,7 @@ console.log(cstamp,"tele",mapz);
 				}
 				if(x>=0){
 					player.z=y*MapWide+x;
-					player.object=player.object.substr(0,3)+"R";
+					player.object=player.object.substr(0,3)+"R"+player.object.substr(4);
 					TickObj+="r";
 					token();
 				}
@@ -343,6 +343,7 @@ console.log(cstamp,"tele",mapz);
 							Wearing+=Class+type;
 						}
 					}
+					if(player.object.length<4)player.object+=Math.random()<.5?"L":"R"; // in case still new
 					player.object=player.object.substr(0,4)+Wearing;
 					print+="dinv=1\n";
 					token();
