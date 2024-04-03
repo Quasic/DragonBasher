@@ -316,7 +316,7 @@ console.log(cstamp,"tele",mapz);
 							Fc:["Ia",60,"Fd"],
 							Fd:["Ia",60,"Fc"]
 						}[slotitem[1]]){
-							savedynamic(player.tmap,plant[0],plant[1],player.tz);
+							savedynamic(player.tmap,plant[0],percent0_x(8,plant[1]+cstamp),player.tz);
 							player.inven=player.inven.substr(0,slotitem[0])+plant[2]+("Za"===plant[2]?"00000000":player.inven.substr(slotitem[0]+2,8))+player.inven.substr(slotitem[0]+10);
 							player.inven.replace(/Ei/,"Bd");
 							inv();
@@ -335,7 +335,7 @@ console.log(cstamp,"tele",mapz);
 					else return;
 					inv();
 					print+="dinv=1\n";
-					savedynamic(player.tmap,"Zj",60,player.tz);
+					savedynamic(player.tmap,"Zj",percent0_x(8,cstamp+60),player.tz);
 				}
 			},
 			wear:function(){
@@ -374,10 +374,44 @@ console.log(cstamp,"tele",mapz);
 				}
 			},
 			get:function(){
-				//TODO: get.pl needs glob function for statics and dynamics
+				var filestamp=mapdynamic[player.tmap]&&mapdynamic[player.tmap][player.tz]&&mapdynamic[player.tmap][player.tz][form.j];
+				if(filestamp){
+					var f=player.inven.indexOf("Za");
+					if(f>-1){
+						if(form.j.substr(0,1)=="F"){
+							// convert food timestamp from seconds to minutes
+							filestamp=percent0_x(8,Math.min(parseInt("0x"+filestamp),60)*60+cstamp);
+						}
+						player.inven=player.inven.substr(0,f)+form.j+filestamp+player.inven.substr(f+10);
+						inv();
+						print+="dinv=1\n";
+						mapdynamic[player.tmap][player.tz][form.j]=undefined;
+						delete mapdynamic[player.tmap][player.tz][form.j];
+					}else print+="pop=no space "+f+"\n";
+				}else{ //just avoid glob for this db
+					xf.static();
+				}
 			},
 			drop:function(){
-				//TODO: drop.pl needs glob function for dynamics
+				var slotitem=form.j.split("-");
+				slotitem[0]*=10;
+				var invitem=player.inven.substr(slotitem[0],2),
+				invstamp=player.inven.substr(slotitem[0]+2,8);
+				if(invitem==slotitem[1]&&!(mapdynamic[player.tmap]&&mapdynamic[player.tmap][player.tz]&&mapdynamic[player.tmap][player.tz][invitem])){
+					if(invitem.substr(0,1)=="F"){
+						invstamp=Math.floor((parseInt("0x"+invstamp)-cstamp)/60);
+						if(invstamp>60)invstamp=60;
+						invstamp=percent0_x(8,cstamp+invstamp);
+					}
+					savedynamic(player.tmap,invitem,invstamp,player.tz);
+					player.inven=player.inven.substr(0,slotitem[0])+"Za00000000"+player.inven.substr(slotitem[0]+10)
+					inv();
+					if(player.object.indexOf(invitem)>=0){
+						form.j=invitem;
+						remove();
+					}
+				}
+				xf.refresh();
 			},
 			"static":function(){
 				var f,
@@ -389,9 +423,9 @@ console.log(cstamp,"tele",mapz);
 							if(codetsz[0].substr(0,1)=="Z"){
 								({
 									Zf:function(){},//TODO static-Zf.pl
-									Zg:function(){},//...
-									Zh:function(){},//...
-									Zi:function(){},//...
+									Zg:function(){},//TODO static-Zg.pl
+									Zh:function(){},//TODO static-Zh.pl
+									Zi:function(){},//TODO static-Zi.pl
 									Zj:function(){}//TODO static-Zj.pl
 								}[codetsz[0]]||nop)();
 							}else{
@@ -656,22 +690,24 @@ console.log(cstamp,"players",map,q,t);
 				j=q-1,
 				//tileset=loadmap(map), //why?
 				it=["","","",""];
-				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i)){
-					t=i.split(" ");
-					if(cstamp>mapdynamic[map][i]){
+console.log("items",map,q,mapdynamic)
+				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i))if("object"===typeof mapdynamic[map][i])for(t in mapdynamic[map][i])if(!mapdynamic[map][i].hasOwnProperty||mapdynamic[map][i].hasOwnProperty(t)){
+console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
+					var stamp=parseInt("0x"+mapdynamic[map][i][t]);
+					if(cstamp>stamp){
 						({
 							Ia:function(){},//TODO: g-Ia.pl
 							Fa:function(){},//TODO: g-Fa.pl
 							Fb:function(){},//TODO: g-Fb.pl
 							Fc:function(){},//TODO: g-Fc.pl
 							Fd:function(){}//TODO: g-Fd.pl
-						}[t[0]]||nop)();
-						mapdynamic[map][i]=undefined;
-						delete mapdynamic[map][i];
-					}else if(q)it[j]+=t[0]+percent0_x(2,t[1]);
+						}[t]||nop)();
+						mapdynamic[map][i][t]=undefined;
+						delete mapdynamic[map][i][t];
+					}else if(q)it[j]+=t+percent0_x(2,i);
 					else{
-						z=zconv(t[1]);
-						it[z[0]]+=t[0]+percent0_x(2,t[1]);
+						z=zconv(mapdynamic[map][i][t]);
+						it[z[0]]+=t+percent0_x(2,i);
 					}
 				}
 				for(i=0;i<4;i++)if(it[i]||!q)print+="i"+i+"="+it[i]+"\n";
@@ -752,12 +788,32 @@ console.log(cstamp,"token.out",player.token);
 		}
 		function savedynamic(map,item,e,tz){
 			if(!mapdynamic[map])mapdynamic[map]={};
-			mapdynamic[map][item+" "+tz]=cstamp+e;
+			if(!mapdynamic[map][tz])mapdynamic[map][tz]={};
+			mapdynamic[map][tz][item]=e;
 		}
 		function hasFire(){
-			if(mapdynamic[player.tmap]&&mapdynamic["Zj "+player.tz])return true;
-			//if(player.inven.indexOf("Zj")>=0)
-			//TODO: fire.pl also drops/lights fire
+			if(mapdynamic[player.tmap]&&mapdynamic[player.tmap][player.tz]&&mapdynamic[player.tmap][player.tz].Zj)return true;
+			var p;
+			if((p=player.inven.indexOf("Zj"))>=0){
+				form.j=p/10+"-Zj"
+				xf.drop();
+				return true;
+			}else if((p=player.inven.indexOf("Dj"))>=0){
+				savedynamic(player.tmap,"Zj",newstamp("Zj"),player.tz);
+				player.inven=player.inven.substr(0,p)+"Za00000000"+player.inven.substr(p+10);
+				inv();
+				return true;
+			}else if((p=player.inven.indexOf("Dk"))>=0){
+				savedynamic(player.tmap,"Zj",newstamp("Zj"),player.tz);
+				player.inven=player.inven.substr(0,p)+"Dj"+player.inven.substr(p+2);
+				inv();
+				return true;
+			}else if((p=player.inven.indexOf("Dl"))>=0){
+				savedynamic(player.tmap,"Zj",newstamp("Zj"),player.tz);
+				player.inven=player.inven.substr(0,p)+"Dk"+player.inven.substr(p+2);
+				inv();
+				return true;
+			}
 			return false;
 		}
 	};
