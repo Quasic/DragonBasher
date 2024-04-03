@@ -655,7 +655,7 @@ console.log(cstamp,"players",map,q,t);
 				var i,t,z,
 				j=q-1,
 				//tileset=loadmap(map), //why?
-				it=[];
+				it=["","","",""];
 				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i)){
 					t=i.split(" ");
 					if(cstamp>mapdynamic[map][i]){
@@ -679,7 +679,7 @@ console.log(cstamp,"players",map,q,t);
 			function statics(map,q){
 				var s,i,t,z,
 				j=q-1,
-				st=[];
+				st=["","","",""];
 				//statics have default, but not generated
 				if(s=loadstatics(map))for(s=s.split("*"),i=0;i<s.length;i++){
 					t=s[i].split(" ");
