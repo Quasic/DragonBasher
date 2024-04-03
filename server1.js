@@ -9,6 +9,13 @@
 	scrolldist=4,
 	scrollpause=1,
 	NumInven=24,
+	newstampo={
+		Ga:3600,//minnow
+		Gd:86400,//crab
+		Ge:86400,//carp
+		Za:0,//nothing
+		Zj:60//fire
+	},
 	player={},maptoken={},mapts={},mapdynamic={},initstamp=Math.floor(new Date/60000)-1,nop=function(){};
 	function loadmap(map){
 		//no validity check for 1 player
@@ -741,13 +748,7 @@ console.log(cstamp,"token.out",player.token);
 			player.object=player.object.replace(form.j,'');
 		}
 		function newstamp(item){
-			return percent0_x(8,cstamp+({
-				Ga:3600,//minnow
-				Gd:86400,//crab
-				Ge:86400,//carp
-				Za:0,//nothing
-				Zj:60//fire
-			}[item]||60));
+			return percent0_x(8,cstamp+(newstampo[item]||60));
 		}
 		function savedynamic(map,item,e,tz){
 			if(!mapdynamic[map])mapdynamic[map]={};
