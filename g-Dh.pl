@@ -6,7 +6,7 @@ if (rand(100)<65) {
   open (FILE,">$dir/Ia $estamp $tokens[2].txt");
   print FILE "\n";
   close FILE;
-  $items.="Dh".sprintf("%02x", $tokens[2]);
+  $items.="Ia".sprintf("%02x", $tokens[2]);
 }
 
 1;

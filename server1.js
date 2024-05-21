@@ -801,7 +801,10 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 								it[z[0]]+=toitem+percent0_x(2,z[1]);
 							}
 						}
-						({
+						({ //g-[A-Z][a-z].pl
+							Dh:function(){
+								if(Math.random()<.65)xform("Ia",60,/^[FG]/);
+							},
 							Ia:function(){},//TODO: g-Ia.pl
 							Fa:function(){
 								if(Math.random()<.45)xform("Ia",60,/^[FG]/);
