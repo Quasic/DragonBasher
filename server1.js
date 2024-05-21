@@ -421,12 +421,63 @@ if(window.console)console.log(cstamp,"tele",mapz);
 					if(player.tz==codetsz[2]){
 						if(codetsz[0].length==2){
 							if(codetsz[0].substr(0,1)=="Z"){
-								({
-									Zf:function(){},//TODO static-Zf.pl
-									Zg:function(){},//TODO static-Zg.pl
-									Zh:function(){},//TODO static-Zh.pl
-									Zi:function(){},//TODO static-Zi.pl
-									Zj:function(){}//TODO static-Zj.pl
+								({ // static-
+									Zf:function(){
+										//sign
+										print+="pop="+codetsz[3];
+										for(var i=4;i<codetsz.length;i++)print+=" "+codetsz[i];
+										print+="\n";
+									},
+									Zg:function(){
+										//fishing dock
+										if(form.k.substr(0,1).toUpperCase()+form.k.substr(1,2).toLowerCase()!=form.k)return print+="pop=Bad Bait!\n";
+										var o={
+											Ga:{odds:10,tool:"Bj",bait:0},
+											Gd:{odds:10,tool:"Bj",bait:"GaGd",baitlossodds:10},
+											Ge:{odds:10,tool:"Bk",bait:"GaGd",baitlossodds:10}
+										}[codetsz[3]],
+										k=player.inven.indexOf(form.k),
+										f=player.inven.indexOf("Za");
+										if(!o)return print+="pop=No Fish to catch!\n";
+										if(f<0)return print+="pop=Full Inventory\n"; //could lose bait if inv is full and a fish is caught, by removing this line, but a warning is generally preferable
+										if(player.inven.indexOf(o.tool)>=0){
+											if(o.bait){
+												if(k<0||bait.indexOf(form.k)<0)return print+="pop=Need Bait\n";
+												if(Math.floor(Math.random()*100)<o.baitlossodds){
+													player.inven=player.inven.substr(0,k)+"Za00000000"+player.inven.substr(k+10);
+													inv();
+													print+="pop=Lost Bait!\n";
+												}
+											}
+											if(o.odds){
+												//catch fish
+												if(Math.floor(Math.random()*100)<o.odds){
+													if(f<0){
+														if(k<0)return print+="pop=Full Inventory\n";
+														f=k;
+														print+="pop=Lost Bait!\n";
+													}
+													player.inven=player.inven.substr(0,f)+codetsz[3]+newstamp(codetsz[3])+player.inven.substr(f+10);
+													inv();
+													print+="pop=You catch a Fish!\n";
+												}else print+="pop=Nothing\n";
+											}
+										}else print+="pop=Need "+({Bj:"Net",Bk:"Pole"}[o.tool])+"\n";
+									},
+									Zh:function(){
+										print+="pop=Enter City\n";
+									},
+									Zi:function(){
+										var f=player.inven.indexOf("Cg")
+										if(f>=0){
+											player.inven=player.inven.substr(0,f)+"Zj"+percent0_x(8,cstamp+60)+player.inven.substr(f+10);
+											inv();
+											print+="dinv=1v\n";
+										}
+									},
+									Zj:function(){
+										print+="pop=Fire\n";
+									}
 								}[codetsz[0]]||nop)();
 							}else{
 								f=player.inven.indexOf("Za");
@@ -440,11 +491,57 @@ if(window.console)console.log(cstamp,"tele",mapz);
 								//npc
 							}else{
 								({
-									TPORT:function(){},//TODO: static-tport.pl
-									WELL:function(){},//TODO: static-well.pl
-									FOUNTAIN:function(){},//TODO: static-fountain.pl
-									FARMHOUSE:function(){},//TODO: static-farmhouse.pl
-									CLOTHES:function(){}//TODO: static-clothes.pl
+									TPORT:function(){
+										print+="pop=tport\n";
+										var mapz;
+										if(codetsz[3]&&(mapz=codetsz[3].split("-")).length>1){
+											player.map=mapz[0];
+											player.z=mapz[1];
+											var ab=token(1);
+											print+="t0="+loadmap(ab.a1+ab.b1)+"\nt1="+loadmap(ab.a1+ab.b2)+"\nt2="+loadmap(ab.a2+ab.b1)+"\nt3="+loadmap(ab.a2+ab.b2)+"\nRMap=1\n";
+										}else if(player.name==codetsz[3]){
+											if(player.tport1){
+												print+="pop=linking this teleport to that teleport...\n";
+												var dest=player.tport1.split("-");
+												Cookie.set("st"+player.tmap,loadstatics(player.tmap)+"*TPORT 00000000 "+dest[1]+" "+player.tport1);
+												print+="pop=linking that teleport to this teleport...\n";
+												Cookie.set("st"+dest[0],loadstatics(dest[0])+"*TPORT 00000000 "+dest[1]+" "+player.map+"-"+player.z);
+												player.tport1=false;
+												delete player.tport1;
+												print+="pop=teleport completed.\n";
+											}else{
+												player.tport1=player.map+"-"+player.z;
+												print+="pop=add another teleport for destination\n";
+											}
+										}else{
+											print+="pop=player name does not matches\n";
+										}
+									},
+									WELL:function(){
+										var t=player.inven.indexOf("Bd");
+										if(t>-1){
+											player.inven=player.inven.substr(0,t)+"Ei"+player.inven.substr(t+2);
+											inv();
+											print+="dinv=1v\n";
+										}
+									},
+									FOUNTAIN:function(){
+										var t=player.inven.indexOf("Bd");
+										if(t>-1){
+											player.inven=player.inven.substr(0,t)+"Ei"+player.inven.substr(t+2);
+											inv();
+											print+="dinv=1v\n";
+										}
+									},
+									FARMHOUSE:function(){
+										var slot=player.inven.indexOf("Za")
+										if(player.inven.match(/F[abcd]/)&&slot>-1){
+											player.inven=player.inven.substr(0,slot)+"Fd"+percent0_x(8,cstamp+3600)+player.inven.substr(slot+10);
+											inv();
+											print+="dinv=1v\n";
+										}
+									},
+									CLOTHES:function(){}//static-clothes.pl basically unimplemented
 								}[codetsz[0]]||function(){
 									print+="pop=invalid static object\n";
 									})();
