@@ -788,10 +788,10 @@ if(window.console)console.log(cstamp,"players",map,q,t);
 				//tileset=loadmap(map), //why?
 				it=["","","",""];
 if(window.console)console.log("items",map,q,mapdynamic)
+				//tokens 0=t (tile) 1=mapdynamic[map][i][t] (expiration) 2=i (tz)
 				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i))if("object"===typeof mapdynamic[map][i])for(t in mapdynamic[map][i])if(!mapdynamic[map][i].hasOwnProperty||mapdynamic[map][i].hasOwnProperty(t)){
 if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
-					var stamp=parseInt("0x"+mapdynamic[map][i][t]);
-					if(cstamp>stamp){
+					if(cstamp>mapdynamic[map][i][t]){
 						({
 							Ia:function(){},//TODO: g-Ia.pl
 							Fa:function(){},//TODO: g-Fa.pl
@@ -803,8 +803,8 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 						delete mapdynamic[map][i][t];
 					}else if(q)it[j]+=t+percent0_x(2,i);
 					else{
-						z=zconv(mapdynamic[map][i][t]);
-						it[z[0]]+=t+percent0_x(2,i);
+						z=zconv(i);
+						it[z[0]]+=t+percent0_x(2,z[1]);
 					}
 				}
 				for(i=0;i<4;i++)if(it[i]||!q)print+="i"+i+"="+it[i]+"\n";
