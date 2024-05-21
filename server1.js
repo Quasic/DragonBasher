@@ -55,7 +55,7 @@
 			v=t[i].split('=');
 			form[v[0]]=(window.decodeURIcomponent||window.unescape)(v[1]);
 		}
-console.log(cstamp,form);
+if(window.console)console.log(cstamp,form);
 		//if((form.s+form.c).match(/[^A-Za-z0-9\-]/)||(form.j+form.k).match(/[^A-Za-z0-9 -]/)||form.d.match(/[^A-Za-z0-9]/)||form.m.match(/[^A-Za-z0-9\.]/)){error+="Malformed query (someone left clever debug code in?)\n")}
 		if(form.n.match(/[^A-Za-z0-9]/))error+="Invalid Character In Name\n";
 		if(form.n.length<3)error+="Name must be at least 3 characters\n";
@@ -130,7 +130,7 @@ console.log(cstamp,form);
 					if(mapz.length<2||mapz[1]<1)mapz[1]=player.tz||88;
 					player.map=mapz[0];
 					player.z=mapz[1];
-console.log(cstamp,"tele",mapz);
+if(window.console)console.log(cstamp,"tele",mapz);
 					token();
 					player.ts=-1;
 					refresh();
@@ -633,7 +633,7 @@ console.log(cstamp,"tele",mapz);
 		}
 		if(xf[form.c])xf[form.c]();
 		saveplayer();
-console.log(cstamp,print);
+if(window.console)console.log(cstamp,print);
 		q.success(print);
 		function refresh(){//refresh.pl, $loadmap unneeded, as functions already loaded
 			var a1=player.map.substr(0,1),
@@ -682,7 +682,7 @@ console.log(cstamp,print);
 						maptoken[map][i]=undefined;
 						delete maptoken[map][i];
 					}else print+="p="+t[0]+" "+t[1]+" "+t[2]+" "+(q?q+"-"+t[3]:zconv(t[3]).join("-"))+"\n";
-console.log(cstamp,"players",map,q,t);
+if(window.console)console.log(cstamp,"players",map,q,t);
 				}
 			}
 			function items(map,q){
@@ -690,9 +690,9 @@ console.log(cstamp,"players",map,q,t);
 				j=q-1,
 				//tileset=loadmap(map), //why?
 				it=["","","",""];
-console.log("items",map,q,mapdynamic)
+if(window.console)console.log("items",map,q,mapdynamic)
 				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i))if("object"===typeof mapdynamic[map][i])for(t in mapdynamic[map][i])if(!mapdynamic[map][i].hasOwnProperty||mapdynamic[map][i].hasOwnProperty(t)){
-console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
+if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 					var stamp=parseInt("0x"+mapdynamic[map][i][t]);
 					if(cstamp>stamp){
 						({
@@ -760,14 +760,14 @@ console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 					map+=b2;
 				}else map+=b1;
 				z=(y*MapSizeX1)+x;
-console.log(cstamp,"token.noncity",map,x,y,z);
+if(window.console)console.log(cstamp,"token.noncity",map,x,y,z);
 			}
 			detoken();
 			player.tmap=map;
 			player.tz=z;
 			if(!maptoken[player.tmap])maptoken[player.tmap]={};
 			maptoken[player.tmap][player.token=player.name+" 3 "+player.object+"-"+TickObj+" "+z+" "+(cstamp+60)]=1;
-console.log(cstamp,"token.out",player.token);
+if(window.console)console.log(cstamp,"token.out",player.token);
 		}
 		function detoken(){
 			if(player.token&&maptoken[player.tmap]){
