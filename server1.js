@@ -792,12 +792,29 @@ if(window.console)console.log("items",map,q,mapdynamic)
 				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i))if("object"===typeof mapdynamic[map][i])for(t in mapdynamic[map][i])if(!mapdynamic[map][i].hasOwnProperty||mapdynamic[map][i].hasOwnProperty(t)){
 if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 					if(cstamp>mapdynamic[map][i][t]){
+						function xform(toitem,e,tileregex){
+							if(tileregex&&!loadmap(map).substr(i*2,2).match(tileregex))return;
+							mapdynamic[map][i][toitem]=cstamp+(e||60);
+							if(q)it[j]+=toitem+percent0_x(2,i);
+							else{
+								z=zconv(i);
+								it[z[0]]+=toitem+percent0_x(2,z[1]);
+							}
+						}
 						({
 							Ia:function(){},//TODO: g-Ia.pl
-							Fa:function(){},//TODO: g-Fa.pl
-							Fb:function(){},//TODO: g-Fb.pl
-							Fc:function(){},//TODO: g-Fc.pl
-							Fd:function(){}//TODO: g-Fd.pl
+							Fa:function(){
+								if(Math.random()<.45)xform("Ia",60,/^[FG]/);
+							},
+							Fb:function(){
+								if(Math.random()<.5)xform("Ia",60,/^[FG]/);
+							},
+							Fc:function(){
+								if(Math.random()<.55)xform("Ia",60,/^[FG]/);
+							},
+							Fd:function(){
+								if(Math.random()<.6)xform("Ia",60,/^[FG]/);
+							}
 						}[t]||nop)();
 						mapdynamic[map][i][t]=undefined;
 						delete mapdynamic[map][i][t];
