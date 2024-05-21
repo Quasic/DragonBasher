@@ -1,8 +1,9 @@
 # external, execute pier
 
-##
-## need to validate $form{'k'} as valid object (upper case char and lower case char)
-##
+if (form{'k'}!~/^[A-Z][a-z]$/) {
+  form.k='';
+  print "pop=Bad Bait!\n";
+}
 
 ## fish that require net or pole to catch
 $net="GaGd";
