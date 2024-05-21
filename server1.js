@@ -734,7 +734,7 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 			if(x>MapSizeX){q++;x-=MapSizeX1}
 			return[q,y*MapSizeX1+x];
 		}
-		function token(){
+		function token(r){
 			var z,map,
 				a1=player.map.substr(0,1),
 				b1=player.map.substr(1,1);
@@ -768,6 +768,7 @@ if(window.console)console.log(cstamp,"token.noncity",map,x,y,z);
 			if(!maptoken[player.tmap])maptoken[player.tmap]={};
 			maptoken[player.tmap][player.token=player.name+" 3 "+player.object+"-"+TickObj+" "+z+" "+(cstamp+60)]=1;
 if(window.console)console.log(cstamp,"token.out",player.token);
+			if(r)return{a1:a1,b1:b1,a2:a2,b2:b2};
 		}
 		function detoken(){
 			if(player.token&&maptoken[player.tmap]){
