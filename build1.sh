@@ -8,7 +8,7 @@ Options: (defaults for params given by {name:=default})
 TODO: These do NOT work yet, but you can set the long options without leading hyphens, and other hyphens replaced by underscores as variables.
 --width {int:=13}
 --height {int:=7} size of view sections, or full view in tile pairs (double these for size in tiles)
---gfx {url:=../11-gfx} gives the url of the base graphics pack to use in the following defaults, and a few ui images.
+--gfx {url:=11-gfx} gives the url of the base graphics pack to use in the following defaults, and a few ui images.
 --gfx-tile {url:=$gfx/t} map tiles
 --gfx-char {url:=$gfx/c} player characters
 --gfx-item {url:=$gfx/i} items
@@ -26,12 +26,20 @@ exit 129
  printf 'Please run from DragonBasher directory containing client.htm.'
  exit 200
 }
-if [ -d "${gfx:=../11-gfx}" ]
+if [ -d "${gfx:=11-gfx}" ]
 then
  for F in CHATUP CHATDOWN
  do [ -f "$gfx/$F.gif" ]||printf 'Warning: %s.gif not found using --gfx %s.' "$F" "$gfx"
  done
-else printf 'Warning: --gfx set to %s, but there is no directory there, yet.\n' "$gfx"
+else
+ printf 'Warning: --gfx set to %s, but there is no directory there.\n' "$gfx"
+ if [ "$gfx" = "11-gfx" ]
+ then
+  printf 'Warning: Attempting to automatically clone the gfx submodule.\n'
+  git submodule update --init \
+   && printf 'Successfully cloned the gfx submodule.\n' \
+   || printf 'Warning: Failed to automatically clone the gfx submodule!\n'
+ fi
 fi
 if [ -d "${gfx_build:=$gfx/b}" ]
 then
