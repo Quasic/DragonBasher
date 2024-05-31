@@ -2,6 +2,8 @@
 //JS port of pl scripts
 //Released under DragonBasher license (see license.txt)
 
+import { plant } from './plant'
+
 //When you get within scrolldist tiles of edge, it scrolls and pauses unless scrollpause<0; longer pause if scrollpause>0
 (function($){
 	var MapEdgeY='Z',
@@ -21,12 +23,12 @@
 		//no validity check for 1 player
 		//return if exists in order: saved map, default map, or generate random map
 		return Cookie.get("map"+map)||{
-			
+
 		}[map]||randmap();
 	}
 	function loadstatics(map){
 		return Cookie.get("st"+map)||{
-			
+
 		}[map]||"";
 	}
 	function tilestamp(map){
@@ -302,29 +304,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 					}else print+="pop=No Food!\n";
 				}
 			},
-			plant:function(){
-				if(player.inven.indexOf("Ei")<0)return print+="pop=Need Water!\n";
-				var tileset,plant,
-				slotitem=form.j.split("-");
-				if(slotitem[0]<NumInven&&slotitem[1].length===2&&player.inven.substr(slotitem[0]*=10,2)===slotitem[1]){
-					tileset=loadmap(player.tmap),
-					g=tileset.substr(player.tz*2,1);
-					if(g==="F"||g==="G"){
-						if(plant={
-							Fa:["Ia",60,"Za"],
-							Fb:["Ia",60,"Fa"],
-							Fc:["Ia",60,"Fd"],
-							Fd:["Ia",60,"Fc"]
-						}[slotitem[1]]){
-							savedynamic(player.tmap,plant[0],percent0_x(8,plant[1]+cstamp),player.tz);
-							player.inven=player.inven.substr(0,slotitem[0])+plant[2]+("Za"===plant[2]?"00000000":player.inven.substr(slotitem[0]+2,8))+player.inven.substr(slotitem[0]+10);
-							player.inven.replace(/Ei/,"Bd");
-							inv();
-							print+="pop=Planted\n";
-						}
-					}else print+="pop=Not Here\n";
-				}
-			},
+			plant: plant,
 			match:function(){
 				print+="pop=light match\n";
 				var slotitem=form.j.split("-");
