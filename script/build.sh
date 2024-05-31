@@ -1,31 +1,22 @@
-#!/bin/dash
-# Released under DragonBasher license (see license.txt)
-[ --help = "$1" ]&&{
-printf 'script to package stand-alone version of DragonBasher
-Usage: dash package.sh <options>
-Options: (defaults for params given by {name:=default})
---help prints this message and exits
-TODO: These do NOT work yet, but you can set the long options without leading hyphens, and other hyphens replaced by underscores as variables.
---width {int:=13}
---height {int:=7} size of view sections, or full view in tile pairs (double these for size in tiles)
---gfx {url:=11-gfx} gives the url of the base graphics pack to use in the following defaults, and a few ui images.
---gfx-tile {url:=$gfx/t} map tiles
---gfx-char {url:=$gfx/c} player characters
---gfx-item {url:=$gfx/i} items
---gfx-build {url:=$gfx/b} structures
---gfx-keys {url:=$gfx/k} keyboard keys
-'
-exit 129
+#!/usr/bin/env sh
+#
+# Usage: script/build.sh
+
+set -e
+
+[ -f script/build.sh ] || {
+  printf 'Please run from the root DragonBasher directory.'
+  exit 200
 }
 
+./node_modules/.bin/rollup src/server.js \
+  --file dist/server.js \
+  --format es \
+  --sourcemap
 
-#TODO: params
+cp -f jquery-*.js dist/
+cp -rf 11-gfx/ dist/11-gfx/
 
-
-[ -f client.htm ]||{
- printf 'Please run from DragonBasher directory containing client.htm.'
- exit 200
-}
 if [ -d "${gfx:=11-gfx}" ]
 then
  for F in CHATUP CHATDOWN
@@ -74,6 +65,6 @@ awk -v width="${width:-13}" -v height="${height:-7}" -v gfx="$gfx" -v DirBuild="
 }{ #for all other lines
  gsub(/\[htmlurl\]\/11-gfx/,gfx)
  gsub(/\[htmlurl\]/,".")
- gsub(/(<!-- done loading jQuery -->)/,"&\n<script src=./server1.js></script>")
+ gsub(/(<!-- done loading jQuery -->)/,"&\n<script src=./server.js></script>")
  print
-}' client.htm >client1.htm
+}' src/client.html > dist/index.html
