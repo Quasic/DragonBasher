@@ -3,6 +3,7 @@
 //Released under DragonBasher license (see license.txt)
 
 import { plant } from './plant'
+import { saveplayer } from './player'
 
 //When you get within scrolldist tiles of edge, it scrolls and pauses unless scrollpause<0; longer pause if scrollpause>0
 (function($){
@@ -76,9 +77,6 @@ if(window.console)console.log(cstamp,form);
 			//actually created in loadplayer()
 			form.c="login"; //to get working for 1player
 		}
-		function saveplayer(){
-			Cookie.set("plyr"+player.name,player.one+player.object+(player.h>99?"99":(player.h<10?"0":"")+player.h)+player.z+player.map+player.tmap+player.inven);//._-*
-		}
 		function loadplayer(n){
 			var t;
 			if(t=Cookie.get("plyr"+n)){
@@ -90,7 +88,7 @@ if(window.console)console.log(cstamp,form);
 				player={name:n,one:cstamp+60,object:"new",h:60,z:88,map:"B2",tmap:"B2",tz:88,inven:""};
 				for(t=0;t<NumInven;t++)player.inven+="Za00000000";
 				print+="create="+player.name+"\n";
-				saveplayer();
+				saveplayer(player);
 			}
 		}
 		if(form.n!==player.name)loadplayer(form.n);
@@ -709,7 +707,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 			print+="moves="+form.m+"\n";
 		}
 		if(xf[form.c])xf[form.c]();
-		saveplayer();
+		saveplayer(player);
 if(window.console)console.log(cstamp,print);
 		q.success(print);
 		function refresh(){//refresh.pl, $loadmap unneeded, as functions already loaded

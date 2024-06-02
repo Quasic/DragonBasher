@@ -9,10 +9,7 @@ set -e
   exit 200
 }
 
-./node_modules/.bin/rollup src/server.js \
-  --file dist/server.js \
-  --format es \
-  --sourcemap
+npm run rollup
 
 cp -f jquery-*.js dist/
 cp -rf 11-gfx/ dist/11-gfx/

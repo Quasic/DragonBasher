@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "es6",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+  },
+  "include": ["./src/**/*"]
+}

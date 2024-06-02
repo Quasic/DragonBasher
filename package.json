@@ -1,8 +1,19 @@
 {
+  "type": "module",
   "scripts": {
-    "build": "./script/build.sh"
+    "build": "./script/build.sh",
+    "rollup": "./node_modules/.bin/rollup -c rollup.config.js"
   },
   "devDependencies": {
-    "rollup": "^4.18.0"
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/js-cookie": "^3.0.6",
+    "rollup": "^4.18.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@extism/extism": "^1.0.3",
+    "js-cookie": "^3.0.5"
   }
 }
