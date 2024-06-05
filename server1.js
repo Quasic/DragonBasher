@@ -137,35 +137,18 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				}else print+="pop=bad map code:"+mapz[0]+"\n";
 			},
 			left:function(){
-				var a1,
-				b1=player.map.substr(1,1),
-				y=Math.floor(player.z/MapWide),
-				x=player.z-y*MapWide;
-				if(b1>MapEdgeY){
-					if(x)x--;
-					else x=-1;
-				}else{
-					if(x>scrolldist)x--;
-					//scroll within 2 spaces of edge
-					else{
-						a1=player.map.substr(0,1);
-						b1=String.fromCharCode(b1.charCodeAt(0)-1);
-						if(b1<'0')b1=MapEdgeX;
-						var a2=String.fromCharCode(a1.charCodeAt(0)+1);
-						if(a2>MapEdgeY)a2="A";
-						b2=b1;
-						x+=MapSizeX;
-						player.map=a1+b2;
-						print+="t4="+loadmap(a1+b1)+"\nt5="+loadmap(a2+b2)+"\nscroll=left\n";
-					}
+				var t=tileleft();
+				if(t.map!=player.map){
+					player.map=t.map;
+					print+="t4="+loadmap(t.a1+t.b1)+"\nt5="+loadmap(t.a2+t.b2)+"\nscroll=left\n";
 				}
-				if(x>=0){
-					player.z=y*MapWide+x;
+				if(t.x>=0){
+					player.z=t.z;
 					player.object=player.object.substr(0,3)+"L"+player.object.substr(4);
 					TickObj+="l";
 					token();
 				}
-				return !a1;
+				return !t.a1;
 			},
 			right:function(){
 				var a1,
@@ -702,6 +685,30 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				refresh();
 			}
 		};
+		function tileleft(){
+			var map=player.map,
+			a1,b1=map.substr(1,1),a2,b2,
+			y=Math.floor(player.z/MapWide),
+			x=player.z-y*MapWide;
+			if(b1>MapEdgeY){
+				if(x)x--;
+				else x=-1;
+			}else{
+				if(x>scrolldist)x--;
+				//scroll within 2 spaces of edge
+				else{
+					a1=player.map.substr(0,1);
+					b1=String.fromCharCode(b1.charCodeAt(0)-1);
+					if(b1<'0')b1=MapEdgeX;
+					a2=String.fromCharCode(a1.charCodeAt(0)+1);
+					if(a2>MapEdgeY)a2="A";
+					b2=b1;
+					x+=MapSizeX;
+					map=a1+b2;
+				}
+			}
+			return{map:map,x:x,y:y,z:x<0?player.z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
+		}
 		if(form.m){
 			var steps=Math.min(5,form.m.length),
 			stepfs={
@@ -811,8 +818,7 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 								var y=Math.floor(i/MapWide),
 								x=i-y*MapWide,
 								f,j,k,m=[];
-								if(Math.random()<.25){ //left
-								}
+								if(Math.random()<.25)m[m.length]=tileleft();
 								if(Math.random()<.25){ //right
 								}
 								if(Math.random()<.25){ //up
