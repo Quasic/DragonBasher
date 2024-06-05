@@ -141,7 +141,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				b1=player.map.substr(1,1),
 				y=Math.floor(player.z/MapWide),
 				x=player.z-y*MapWide;
-				if(b1>='a'){
+				if(b1>MapEdgeY){
 					if(x)x--;
 					else x=-1;
 				}else{
@@ -172,7 +172,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				b1=player.map.substr(1,1),
 				y=Math.floor(player.z/MapWide),
 				x=player.z-y*MapWide;
-				if(b1>='a'){
+				if(b1>MapEdgeY){
 					if(x<MapWide-1)x++;
 					else x=-1;
 				}else{
@@ -204,7 +204,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				b1=player.map.substr(1,1),
 				y=Math.floor(player.z/MapWide),
 				x=player.z-y*MapWide;
-				if(b1>='a'){
+				if(b1>MapEdgeY){
 					if(y)y--;
 					else x=-1;
 				}else{
@@ -231,7 +231,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				b1=player.map.substr(1,1),
 				y=Math.floor(player.z/MapWide),
 				x=player.z-y*MapWide;
-				if(b1>='a'){
+				if(b1>MapEdgeY){
 					if(y<MapHigh-1)y++;
 					else x=-1;
 				}else{
