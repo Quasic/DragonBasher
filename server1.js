@@ -807,7 +807,26 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 							Dh:function(){
 								if(Math.random()<.65)xform("Ia",60,/^[FG]/);
 							},
-							Ia:function(){},//TODO: g-Ia.pl
+							Ia:function(){
+								var y=Math.floor(i/MapWide),
+								x=i-y*MapWide,
+								f,j,k,m=[];
+								if(Math.random()<.25){ //left
+								}
+								if(Math.random()<.25){ //right
+								}
+								if(Math.random()<.25){ //up
+								}
+								if(Math.random()<.25){ //down
+								}
+								for(j=0;j<m.length;j++){
+									f=1;
+									for(k in mapdynamic[m[j].map][m[j].z]){f=0;break}
+									if(f)savedynamic(m[j].map,"F"+String.fromCharCode(Math.floor(Math.random()*4)+97),60,m[j].z);
+								}
+								if(Math.random()<.5)xform("Ia",60);
+								else if(Math.random()<.5)xform("F"+String.fromCharCode(Math.floor(Math.random()*4)+97),60);
+							},
 							Fa:function(){
 								if(Math.random()<.45)xform("Ia",60,/^[FG]/);
 							},
