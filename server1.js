@@ -177,33 +177,17 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				return !t.a1;
 			},
 			down:function(){
-				var a1,
-				b1=player.map.substr(1,1),
-				y=Math.floor(player.z/MapWide),
-				x=player.z-y*MapWide;
-				if(b1>MapEdgeY){
-					if(y<MapHigh-1)y++;
-					else x=-1;
-				}else{
-					if(y<MapHigh-scrolldist-1)y++;
-					else{
-						a1=String.fromCharCode(player.map.charCodeAt(0)+1);
-						if(a1>MapEdgeY)a1="A";
-						var a2=String.fromCharCode(a1.charCodeAt(0)+1),
-						b2=String.fromCharCode(b1.charCodeAt(0)+1);
-						if(a2>MapEdgeY)a2="A";
-						if(b2>MapEdgeX)b2="0";
-						y-=MapSizeY;
-						player.map=a1+b1;
-						print+="t4="+loadmap(a2+b1)+"\nt5="+loadmap(a2+b2)+"\nscroll=down\n";
-					}
+				var t=tiledown();
+				if(t.map!=player.map){
+					player.map=t.map;
+					print+="t4="+loadmap(t.a2+t.b1)+"\nt5="+loadmap(t.a2+t.b2)+"\nscroll=down\n";
 				}
-				if(x>=0){
-					player.z=y*MapWide+x;
+				if(t.x>=0){
+					player.z=t.z;
 					TickObj+="d";
 					token();
 				}
-				return !a1;
+				return !t.a1;
 			},
 			cook:function(){
 				var odds=[0],
@@ -723,6 +707,29 @@ if(window.console)console.log(cstamp,"tele",mapz);
 			}
 			return{map:map,x:x,y:y,z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
 		}
+		function tiledown(){
+			var map=player.map,
+			a1,b1=map.substr(1,1),a2,b2,
+			y=Math.floor(player.z/MapWide),
+			x=player.z-y*MapWide;
+			if(b1>MapEdgeY){
+				if(y<MapHigh-1)y++;
+				else x=-1;
+			}else{
+				if(y<MapHigh-scrolldist-1)y++;
+				else{
+					a1=String.fromCharCode(player.map.charCodeAt(0)+1);
+					if(a1>MapEdgeY)a1="A";
+					a2=String.fromCharCode(a1.charCodeAt(0)+1);
+					b2=String.fromCharCode(b1.charCodeAt(0)+1);
+					if(a2>MapEdgeY)a2="A";
+					if(b2>MapEdgeX)b2="0";
+					y-=MapSizeY;
+					map=a1+b1;
+				}
+			}
+			return{map:map,x:x,y:y,z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
+		}
 		if(form.m){
 			var steps=Math.min(5,form.m.length),
 			stepfs={
@@ -835,8 +842,7 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 								if(Math.random()<.25)m[m.length]=tileleft();
 								if(Math.random()<.25)m[m.length]=tileright();
 								if(Math.random()<.25)m[m.length]=tileup();
-								if(Math.random()<.25){ //down
-								}
+								if(Math.random()<.25)m[m.length]=tiledown();
 								for(j=0;j<m.length;j++){
 									f=1;
 									for(k in mapdynamic[m[j].map][m[j].z]){f=0;break}
