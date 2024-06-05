@@ -792,6 +792,8 @@ if(window.console)console.log("items",map,q,mapdynamic)
 				if("object"===typeof mapdynamic[map])for(i in mapdynamic[map])if(!mapdynamic[map].hasOwnProperty||mapdynamic[map].hasOwnProperty(i))if("object"===typeof mapdynamic[map][i])for(t in mapdynamic[map][i])if(!mapdynamic[map][i].hasOwnProperty||mapdynamic[map][i].hasOwnProperty(t)){
 if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 					if(cstamp>mapdynamic[map][i][t]){
+						mapdynamic[map][i][t]=undefined;
+						delete mapdynamic[map][i][t];
 						function xform(toitem,e,tileregex){
 							if(tileregex&&!loadmap(map).substr(i*2,2).match(tileregex))return;
 							mapdynamic[map][i][toitem]=cstamp+(e||60);
@@ -819,8 +821,6 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 								if(Math.random()<.6)xform("Ia",60,/^[FG]/);
 							}
 						}[t]||nop)();
-						mapdynamic[map][i][t]=undefined;
-						delete mapdynamic[map][i][t];
 					}else if(q)it[j]+=t+percent0_x(2,i);
 					else{
 						z=zconv(i);
