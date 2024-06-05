@@ -165,31 +165,16 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				return !t.a1;
 			},
 			up:function(){
-				var a1,
-				b1=player.map.substr(1,1),
-				y=Math.floor(player.z/MapWide),
-				x=player.z-y*MapWide;
-				if(b1>MapEdgeY){
-					if(y)y--;
-					else x=-1;
-				}else{
-					if(y>scrolldist)y--;
-					else{
-						a1=String.fromCharCode(player.map.charCodeAt(0)-1);
-						if(a1<'A')a1=MapEdgeY;
-						var a2=a1,
-						b2=String.fromCharCode(b1.charCodeAt(0)+1);
-						if(b2>MapEdgeX)b2='0';
-						y+=MapSizeY;
-						print+="t4="+loadmap(player.map=a1+b1)+"\nt5="+loadmap(a2+b2)+"\nscroll=up\n";
-					}
+				var t=tileup();
+				if(t.map!=player.map){
+					print+="t4="+loadmap(player.map=t.map)+"\nt5="+loadmap(t.a2+t.b2)+"\nscroll=up\n";
 				}
-				if(x>=0){
-					player.z=y*MapWide+x;
+				if(t.x>=0){
+					player.z=t.z;
 					TickObj+="u";
 					token();
 				}
-				return !a1;
+				return !t.a1;
 			},
 			down:function(){
 				var a1,
@@ -716,6 +701,28 @@ if(window.console)console.log(cstamp,"tele",mapz);
 			}
 			return{map:map,x:x,y:y,z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
 		}
+		function tileup(){
+			var map=player.map,
+			a1,b1=map.substr(1,1),a2,b2,
+			y=Math.floor(player.z/MapWide),
+			x=player.z-y*MapWide;
+			if(b1>MapEdgeY){
+				if(y)y--;
+				else x=-1;
+			}else{
+				if(y>scrolldist)y--;
+				else{
+					a1=String.fromCharCode(player.map.charCodeAt(0)-1);
+					if(a1<'A')a1=MapEdgeY;
+					a2=a1;
+					b2=String.fromCharCode(b1.charCodeAt(0)+1);
+					if(b2>MapEdgeX)b2='0';
+					y+=MapSizeY;
+					map=a1+b1;
+				}
+			}
+			return{map:map,x:x,y:y,z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
+		}
 		if(form.m){
 			var steps=Math.min(5,form.m.length),
 			stepfs={
@@ -827,8 +834,7 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 								f,j,k,m=[];
 								if(Math.random()<.25)m[m.length]=tileleft();
 								if(Math.random()<.25)m[m.length]=tileright();
-								if(Math.random()<.25){ //up
-								}
+								if(Math.random()<.25)m[m.length]=tileup();
 								if(Math.random()<.25){ //down
 								}
 								for(j=0;j<m.length;j++){
