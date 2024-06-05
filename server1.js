@@ -2,14 +2,16 @@
 //JS port of pl scripts
 //Released under DragonBasher license (see license.txt)
 
-//When you get within scrolldist tiles of edge, it scrolls and pauses unless scrollpause<0; longer pause if scrollpause>0
 (function($){
-	var MapEdgeY='Z',
-	MapEdgeX='9',
+	//Settings:
+	//values outside of the specified range give undefined results
+	var MapEdgeY='Z', // B-Z, height of world in maps (counting by letters A=1, Z=26) [The rest can be used as cities, but it is recommended to use one of the 26*9 city maps using a lowercase letter in case you want to expand this setting later.]
+	MapEdgeX='9', // 1-9, width of world in maps-1
 	scrolldist=4,
+	//When you get within scrolldist tiles of edge, it scrolls and pauses unless scrollpause<0; longer pause if scrollpause>0
 	scrollpause=1,
-	NumInven=24,
-	newstampo={
+	NumInven=24, // # of inventory slots, must not exceed client capacity
+	newstampo={ //default lifetimes of items, used by newstamp()
 		Ga:3600,//minnow
 		Gd:86400,//crab
 		Ge:86400,//carp
