@@ -151,36 +151,18 @@ if(window.console)console.log(cstamp,"tele",mapz);
 				return !t.a1;
 			},
 			right:function(){
-				var a1,
-				b1=player.map.substr(1,1),
-				y=Math.floor(player.z/MapWide),
-				x=player.z-y*MapWide;
-				if(b1>MapEdgeY){
-					if(x<MapWide-1)x++;
-					else x=-1;
-				}else{
-					if(x<MapWide-scrolldist-1)x++;
-					else{ //scroll
-						a1=player.map.substr(0,1);
-						b1=String.fromCharCode(b1.charCodeAt(0)+1)
-						if(b1>MapEdgeX)b1="0";
-						var a2=String.fromCharCode(a1.charCodeAt(0)+1),
-						b2=String.fromCharCode(b1.charCodeAt(0)+1);
-						if(b2>MapEdgeX)b2="0";
-						b1=b2;
-						if(a2>MapEdgeY)a2="A";
-						x-=MapSizeX;
-						player.map=a1+b1;
-						print+="t4="+loadmap(a1+b2)+"\nt5="+loadmap(a2+b2)+"\nscroll=right\n";
-					}
+				var t=tileright();
+				if(t.map!=player.map){
+					player.map=t.map;
+					print+="t4="+loadmap(t.a1+t.b2)+"\nt5="+loadmap(t.a2+t.b2)+"\nscroll=right\n";
 				}
-				if(x>=0){
-					player.z=y*MapWide+x;
+				if(t.x>=0){
+					player.z=t.z;
 					player.object=player.object.substr(0,3)+"R"+player.object.substr(4);
 					TickObj+="r";
 					token();
 				}
-				return !a1;
+				return !t.a1;
 			},
 			up:function(){
 				var a1,
@@ -709,6 +691,31 @@ if(window.console)console.log(cstamp,"tele",mapz);
 			}
 			return{map:map,x:x,y:y,z:x<0?player.z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
 		}
+		function tileright(){
+			var map=player.map,
+			a1,b1=map.substr(1,1),a2,b2,
+			y=Math.floor(player.z/MapWide),
+			x=player.z-y*MapWide;
+			if(b1>MapEdgeY){
+				if(x<MapWide-1)x++;
+				else x=-1;
+			}else{
+				if(x<MapWide-scrolldist-1)x++;
+				else{ //scroll
+					a1=player.map.substr(0,1);
+					b1=String.fromCharCode(b1.charCodeAt(0)+1)
+					if(b1>MapEdgeX)b1="0";
+					a2=String.fromCharCode(a1.charCodeAt(0)+1);
+					b2=String.fromCharCode(b1.charCodeAt(0)+1);
+					if(b2>MapEdgeX)b2="0";
+					b1=b2;
+					if(a2>MapEdgeY)a2="A";
+					x-=MapSizeX;
+					map=a1+b1;
+				}
+			}
+			return{map:map,x:x,y:y,z:y*MapWide+x,a1:a1,b1:b1,a2:a2,b2:b2};
+		}
 		if(form.m){
 			var steps=Math.min(5,form.m.length),
 			stepfs={
@@ -819,8 +826,7 @@ if(window.console)console.log(cstamp,"item",mapdynamic[map][i][t],i,t);
 								x=i-y*MapWide,
 								f,j,k,m=[];
 								if(Math.random()<.25)m[m.length]=tileleft();
-								if(Math.random()<.25){ //right
-								}
+								if(Math.random()<.25)m[m.length]=tileright();
 								if(Math.random()<.25){ //up
 								}
 								if(Math.random()<.25){ //down
