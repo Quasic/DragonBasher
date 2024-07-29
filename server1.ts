@@ -29,6 +29,7 @@ function assertUnreachable(): never { throw new Error("Didn't expect to get here
 type WorldCoord = `${UpperLetter}${Digit | LowerLetter}`;
 type MoveData = { map: WorldCoord, x: number, y: number, z: number, a1: UpperLetter, b1: Digit, a2: UpperLetter, b2: Digit }; // Note: LowerLetter may show up in Digit place if not scrolling
 type Tile = `${UpperLetter}${LowerLetter}`;
+type TileFunction = () => Tile;
 type ItemID = `${UpperLetter}${LowerLetter}`;
 
 class Stamp {
@@ -43,6 +44,7 @@ class Stamp {
 	toString() { return "" + this.stamp }
 	serialize(): string { return Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
 	static unserialize(s: string): Stamp { let t = parseInt(s, 36); return new Stamp(0, isNaN(t) ? 0 : t) }
+	static _1 = new Stamp(-1, 0);
 }
 
 class Item {
@@ -74,6 +76,14 @@ class Inv {
 		}
 		return -1;
 	}
+	search(r: RegExp): number {
+		let i: number = 0;
+		for (; i < this.inv.length; i++) {
+			if (this.inv[i] instanceof Item && this.inv[i].id.search(r) >= 0) return i;
+		}
+		if (i < this.max && "Za".search(r) >= 0) return i;
+		return -1;
+	}
 	add(item: Item, slot: number = this.indexOf("Za")): boolean {
 		if ("Za" === item.id || slot < 0 || slot >= this.max || (slot < this.inv.length && this.inv[slot] instanceof Item && this.inv[slot].id !== "Za")) return false;
 		this.inv[slot] = item;
@@ -84,6 +94,9 @@ class Inv {
 	}
 	getSlotItemID(slot: number): ItemID {
 		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? "Za" : this.inv[slot].id;
+	}
+	getSlotItem(slot: number): Item {
+		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? new Item() : this.inv[slot];
 	}
 	rm(id: ItemID, slot: number = this.indexOf(id), replaceWith: Item = new Item()): Item {
 		let inv = this.inv, item: Item;
@@ -111,9 +124,9 @@ class Inv {
 		}
 		return r;
 	}
-	serializeItemIDs(min: number): string { // This is lossy, one-way to client
+	serializeItemIDs(min: number = 0): string { // This is lossy, one-way to client
 		let i = 0, r = "";
-		while (i < this.inv.length) r += this.inv[i++].id;
+		while (i < this.inv.length) r += this.inv[i++].id || "Za";
 		for (; i < min; i++)r += "Za";
 		return r;
 	}
@@ -131,7 +144,7 @@ class Player {
 	tmap: WorldCoord;
 	tz: number;
 	token;
-	ts;
+	ts: Stamp = new Stamp(0, 0);
 	tport1: string = "";
 	//const level:3=3 unused
 }
@@ -156,14 +169,57 @@ class Tileset {
 	constructor(private map: string, st: string = "") {
 		//parse st into this.st
 	}
-	getTileClass(z:number):UpperLetter{return this.map.charAt(2*z)}
-	getTile(z:number):Tile{return this.map.substr(2*z,2)}
-	//type Ttileset=;
+	// q is only used for cities; it allows multiple maps in one
+	getTileClass(z: number, q: 0 | 1 | 2 | 3 = 0): UpperLetter { return this.map.split("*")[q].charAt(2 * z) as UpperLetter }
+	getTile(z: number, q: 0 | 1 | 2 | 3 = 0): Tile { return this.map.split("*")[q].substr(2 * z, 2) as Tile }
+	setTile(tile: Tile, z: number, q: 0 | 1 | 2 | 3 = 0) {
+		if (z < 0 || q < 0 || q > 3) return;
+		let map = this.map.split("*");
+		map[q] = Tileset.expand(map[q], z * 2).substring(0, 2 * z) + tile + map[q].substring(z * 2 + 2);
+		this.map = map.join("*");
+		this.ts = new Stamp();
+	}
+	private static expand(s: string, len: number, tile: Tile | TileFunction = "Ua"): string {
+		if (typeof tile === "string") while (s.length < len) s += tile;
+		else if (typeof tile.apply === typeof tile) while (s.length < len) s += tile();
+		return s;
+	}
+	expand(rows: number, cols: number, isCity: boolean, tile: Tile | TileFunction = "Ua") {
+		let map = this.map.split("*"), len = rows * cols * 2;
+		if (isCity) {
+			for (let i = 0; i < 4; i++)map[i] = Tileset.expand(map[i], len, tile);
+			this.map = map.join("*");
+		} else this.map = Tileset.expand(map[0], len, tile);
+		this.ts = new Stamp();
+	}
+	truncate(rows: number, cols: number, isCity: boolean) {
+		let map = this.map.split("*"), len = rows * cols * 2;
+		if (isCity) {
+			for (let i = 0; i < 4; i++)map[i] = map[i].substring(0, len);
+			map.length = 4;
+			this.map = map.join("*");
+		} else this.map = map[0].substring(0, len);
+		// probably don't need to stamp this, unless a too-small value was used
+	}
+	toString() { return this.map }
+	serialize(): string { return this.map }
+	serializeQuarters(): string {
+		let t = this.map.split("*");
+		if (t.length < 4) {
+			for (let i = t.length; i < 4; i++)t[i] = Tileset.randmap();
+			this.map = t.join("*");
+			this.ts = new Stamp();
+		}
+		return "t0=" + t[0] + "\nt1=" + t[1] + "\nt2=" + t[2] + "\nt3=" + t[3] + "\n";
+	}
 	static fill(tile: Tile = "Ua"): string {
 		let tileset = "";
 		for (let i = 0; i < MapSizeX1 * MapSizeY1 * 4; i++)tileset += tile;
 		return tileset;
 	}
+	static randtile(tile: Tile[] = ["Gg", "Ge", "Gb", "Gd", "Og", "Re"], bg: Tile = "Ga", total: number = tile.length + 90): Tile { return tile[Math.floor(Math.random() * total)] || bg }
+	static tileRandFactory(tile: Tile[] = ["Gg", "Ge", "Gb", "Gd", "Og", "Re"], bg: Tile = "Ga", total: number = tile.length + 90): TileFunction { return () => tile[Math.floor(Math.random() * total)] || bg }
+	static tileFillFactory(tile: Tile): TileFunction { return () => tile }
 	static randmap(): string { return this.rand(["Gg", "Ge", "Gb", "Gd", "Og", "Re"], "Ga", 100) }
 	static rand(tiles: Tile[] = ["Gg", "Ge", "Gb", "Gd", "Og", "Re"], bg: Tile = "Ga", total: number = tiles.length + 90): string {
 		let tileset = "";
@@ -188,6 +244,13 @@ class World {
 		}
 		return m;
 	}
+	savemap(map: WorldCoord, tileset: Tileset) {
+		this.map.set(map, tileset);
+	}
+	static saveCookie(map: WorldCoord, tileset: Tileset) {
+		Cookie.set("map" + map, tileset.serialize());
+	}
+	isCity(map: WorldCoord): boolean { return map.charAt(0) > this.EdgeY || map.charAt(1) > this.EdgeX }
 	static null = new World();//typescript didn't like that world could be undefined, below
 	static getCookieWorld(): World { // currently only remembers last played
 		let t: Map<WorldCoord, Tileset> = new Map(), map: WorldCoord, o: Set<Digit | LowerLetter> = new Set();
@@ -385,7 +448,7 @@ class Server {
 					player.z = +mapz[1];
 					if (window.console) console.log(cstamp, "tele", mapz);
 					token();
-					player.ts = -1;
+					player.ts = Stamp._1;
 					refresh();
 				} else print += "pop=bad map code:" + mapz[0] + "\n";
 			},
@@ -494,7 +557,7 @@ class Server {
 			plant: function () {
 				if (player.inven.indexOf("Ei") < 0) return print += "pop=Need Water!\n";
 				let tileset = world.loadmap(player.tmap),
-					plant:[ItemID,number,ItemID],
+					plant: [ItemID, number, ItemID],
 					slotitem = form.j.split("-"),
 					slot = +slotitem[0];
 				if (slot < NumInven && slotitem[1].length === 2 && player.inven.getSlotItemID(slot) === slotitem[1]) {
@@ -507,10 +570,10 @@ class Server {
 								Fc: ["Ia", 60, "Fd"],
 								Fd: ["Ia", 60, "Fc"]
 							}[slotitem[1]]
-							)&&("Za"===plant[2]
-								?player.inven.rm(slotitem[1]).id===slotitem[1] // use last seed
-								:player.inven.chg(slotitem[1],plant[2]) // reduce seed stack
-							)&&player.inven.chg("Ei", "Bd") // water from bucket
+							) && ("Za" === plant[2]
+								? player.inven.rm(slotitem[1]).id === slotitem[1] // use last seed
+								: player.inven.chg(slotitem[1], plant[2]) // reduce seed stack
+							) && player.inven.chg("Ei", "Bd") // water from bucket
 						) {
 							savedynamic(player.tmap, plant[0], new Stamp(plant[1], cstamp), player.tz);
 							inv();
@@ -706,25 +769,25 @@ class Server {
 										}
 									},
 									WELL: function () {
-										var t = player.inven.indexOf("Bd");
+										let t = player.inven.indexOf("Bd");
 										if (t > -1) {
-											player.inven = player.inven.substring(0, t) + "Ei" + player.inven.substr(t + 2);
+											player.inven.chg("Bd", "Ei", t);
 											inv();
 											print += "dinv=1v\n";
 										}
 									},
 									FOUNTAIN: function () {
-										var t = player.inven.indexOf("Bd");
+										let t = player.inven.indexOf("Bd");
 										if (t > -1) {
-											player.inven = player.inven.substring(0, t) + "Ei" + player.inven.substr(t + 2);
+											player.inven.chg("Bd", "Ei", t);
 											inv();
 											print += "dinv=1v\n";
 										}
 									},
 									FARMHOUSE: function () {
-										var slot = player.inven.indexOf("Za")
-										if (player.inven.match(/F[abcd]/) && slot > -1) {
-											player.inven = player.inven.substring(0, slot) + "Fd" + Server.percent0_x(8, cstamp.after(3600)) + player.inven.substr(slot + 10);
+										let slot = player.inven.indexOf("Za");
+										if (player.inven.serializeItemIDs().match(/F[abcd]/) && slot > -1) {
+											player.inven.add(new Item("Fd", new Stamp(3600, cstamp)), slot);
 											inv();
 											print += "dinv=1v\n";
 										}
@@ -797,19 +860,18 @@ class Server {
 					j: [number, string, string];
 				if (J[0].match(/^[A-Z][0-9a-z]$/)) {
 					f = player.inven.indexOf("Za");
-					j = [f / 10, J[0], J[1]];
+					j = [f, J[0], J[1]];
 				} else {
 					j = [+J[0], J[1], J[2]];
-					f = +j[0] * 10;
+					f = +j[0];
 				}
 				print += "pop=/newitem " + j[0] + " " + j[1] + " " + j[2] + "\n";
-				if (player.inven.substr(f, 2) == 'Za') {
-					if (j[1].match(/^[A-Z][0-9a-z]$/)) {
-						player.inven = player.inven.substring(0, f) + j[1] + Server.percent0_x(8, cstamp.after(+j[2])) + player.inven.substr(f + 10);
+				if (j[1].match(/^[A-Z][a-z]$/)) {
+					if (player.inven.add(new Item(j[1] as ItemID, new Stamp(+j[2], cstamp)), f)) {
 						inv();
 						print += "dinv=1\n";
-					} else print += "pop=mismatch\n";
-				} else print += "pop=no space " + f + "\n";
+					} else print += "pop=no space " + f + "\n";
+				} else print += "pop=mismatch\n";
 			},
 			chat: function () {
 				if (form.q) print += "chat=" + player.name + ": " + form.q.replace(/([`\0-\x1f]|\s+$)/g, "").replace(/</g, "&lt;").replace(/>/g, "&gt;") + "<BR>Note: There is no multiplayer or multiserver support for this version.\n";
@@ -822,6 +884,7 @@ class Server {
 					m = X.substr(x, 1) + Y.substr(y, 1);
 					if (t = Cookie.get("map" + m)) print += "<BR>map" + m + ': "' + t + '"';
 					if (t = Cookie.get("st" + m)) print += "<BR>st" + m + ': "' + t + '"';
+					// TODO: use the Map object caches, instead
 				}
 				print += "<BR>Those are the maps you have edited for sharing.\n";
 			},
@@ -835,7 +898,7 @@ class Server {
 			key: function () {
 				var slot = player.inven.indexOf("Za");
 				if (slot >= 0) {
-					player.inven = player.inven.substring(0, slot) + "Zd00015180" + player.inven.substr(slot + 10);
+					player.inven.add(new Item("Zd", new Stamp(0x15180, 0)), slot);
 					inv();
 					print += "dinv=1\n";
 				} else print += "pop=no space for key\n";
@@ -843,44 +906,43 @@ class Server {
 			tile: function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";
 				if (!form.j.match(/^[A-Z][a-z]$/)) return print += "pop=" + form.j + " is not a recognized tile\n";
-				var t = world.loadmap(player.tmap);
-				if (player.tmap.charAt(1) >= 'a') {//city
-					t = t.split("*");
+				let t = world.loadmap(player.tmap),
+					isCity = world.isCity(player.tmap),
+					oldstamp = t.getStamp();
+				t.expand(MapSizeY1, MapSizeX1, isCity);
+				if (isCity) {
 					var z = zconv(player.z);
 					z[0]--;
-					while (t[z[0]].length < MapSizeX1 * MapSizeY1 * 2) t[z[0]] += "Ua";
-					t[z[0]] = t[z[0]].substring(0, z[1] * 2) + form.j + t[z[0]].substr(z[1] * 2 + 2);
-					t = t.join("*");
-				} else t = t.substring(0, player.tz * 2) + form.j + t.substr(player.tz * 2 + 2);
-				Cookie.set("map" + player.tmap, t);
-				if (tilestamp(player.tmap) == cstamp) player.ts = -1;//speed up for 1player
-				else mapts[player.tmap] = cstamp;
+					t.setTile(form.j as Tile, z[1], z[0] as 0 | 1 | 2 | 3);
+				} else t.setTile(form.j as Tile, player.tz);
+				if (player === this.player) World.saveCookie(player.tmap, t);
+				if (oldstamp == cstamp) player.ts = Stamp._1;//speed up for 1player
 				refresh();
 			},
-			grass: function () {
+			/*grass: function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";
 				if ("yes" != form.j) return print += "pop=Confirm (/grass command requires a yes parameter to replace the map with random grass)\n";
 				print += "pop=Terraformed\n";
-				Cookie.set("map" + player.tmap, randmap());
+				let t=world.savemap(player.tmap,Tileset.randmap());
+				if (player === this.player) World.saveCookie(player.tmap, t);
 				if (tilestamp(player.tmap) == cstamp) player.ts = -1;//speed up for 1player
 				else mapts[player.tmap] = cstamp;
 				refresh();
-			},
+			}, need to put this method into Tileset if wanted*/
 			refresh: function () {
 				if (cstamp > player.one) {
 					//one.pl
-					var i, inv = '', estamp, invitem;
-					for (i = 0; i < NumInven; i++) {
-						estamp = parseInt("0x" + player.inven.substr(i * 10 + 2, 8));
-						invitem = player.inven.substr(i * 10, 2);
-						if (estamp && cstamp > estamp) {
-							print += "pop=^" + invitem + " expired\n";
-							player.inven = player.inven.substring(0, i * 10) + "Za00000000" + player.inven.substr(i * 10 + 10);
-							if (player.inven.indexOf(invitem) < 0) {
-								form.j = invitem;
+					let inv = '', estamp, item: Item;
+					for (let i = 0; i < NumInven; i++) {
+						item = player.inven.getSlotItem(i);
+						if (item.expires.since(cstamp) < 0 && item.id !== "Za") {
+							print += "pop=^" + item + " expired\n";
+							player.inven.rm(item.id, i);
+							if (player.inven.indexOf(item.id) < 0) {
+								form.j = item.id;
 								remove();
 							}
-						} else inv += invitem;
+						} else inv += item;
 					}
 					player.h--;
 					print += "inv=" + inv + "\nh=" + player.h + "\n";
@@ -1017,37 +1079,35 @@ class Server {
 			let a1: UpperLetter = player.map.charAt(0) as UpperLetter,
 				b1 = player.map.charAt(1) as Digit,
 				map: WorldCoord = `${a1}${b1}`,
-				i, s, t: string[], z;
+				i, s, t: Tileset = world.loadmap(player.tmap), z;
 			if (a1 < 'A' || a1 > world.EdgeY || b1 < '0' || (b1 > world.EdgeX && b1 < 'a')) print += "pop=Invalid map " + map + "\n";
-			else if (b1 > world.EdgeX) {//city has 4 maps in one
+			else if (world.isCity(map)) {//city has 4 maps in one
 				players(map);
 				statics(map);
 				items(map);
-				if (player.ts != tilestamp(player.tmap)) {
+				if (player.ts.since(t.getStamp()) !== 0) {
 					token();
-					t = world.loadmap(player.tmap).split("*");
-					while (t.length < 4) t[t.length] = randmap();
-					print += "t0=" + t[0] + "\nt1=" + t[1] + "\nt2=" + t[2] + "\nt3=" + t[3] + "\nRMap=1\n";
-					player.ts = tilestamp(player.tmap);
+					print += t.serializeQuarters() + "RMap=1\n";
+					player.ts = new Stamp(0, t.getStamp());
 				}
 			} else {
-				var
-					a2 = String.fromCharCode(a1.charCodeAt(0) + 1),
-					b2 = String.fromCharCode(b1.charCodeAt(0) + 1);
+				let
+					a2 = String.fromCharCode(a1.charCodeAt(0) + 1) as UpperLetter,
+					b2 = String.fromCharCode(b1.charCodeAt(0) + 1) as Digit;
 				if (a2 > world.EdgeY) a2 = "A";
 				if (b2 > world.EdgeX) b2 = "0";
-				map = [a1 + b1, a1 + b2, a2 + b1, a2 + b2];
+				let map: [WorldCoord, WorldCoord, WorldCoord, WorldCoord] = [`${a1}${b1}`, `${a1}${b2}`, `${a2}${b1}`, `${a2}${b2}`];
 				for (i = 0; i < 4; i = s) {
 					s = i + 1;
 					players(map[i], s);
 					items(map[i], s);
 					statics(map[i], s);
 				}
-				if (player.ts != tilestamp(player.tmap)) {
+				if (player.ts.since(t.getStamp()) !== 0) {
 					token();
 					for (i = 0; i < 4; i++)print += "t" + i + "=" + world.loadmap(map[i]) + "\n";
 					print += "RMap=1\n";
-					player.ts = tilestamp(player.tmap);
+					player.ts = t.getStamp();
 				}
 			}
 			print += "RStatic=1\n";
@@ -1063,8 +1123,8 @@ class Server {
 					if (window.console) console.log(cstamp, "players", map, q, t);
 				}
 			}
-			function items(map, q) {
-				var i, t, z,
+			function items(map: WorldCoord, q: 0 | 1 | 2 | 3 | 4 = 0) {
+				let i, t, z,
 					j = q - 1,
 					//tileset=loadmap(map), //why?
 					it = ["", "", "", ""];
@@ -1076,7 +1136,7 @@ class Server {
 						mapdynamic[map][i][t] = undefined;
 						delete mapdynamic[map][i][t];
 						function xform(toitem: ItemID, e: number = 60, tileregex?: RegExp) {
-							if (tileregex && !world.loadmap(map).substr(i * 2, 2).match(tileregex)) return;
+							if (tileregex && !world.loadmap(map).getTile(i).match(tileregex)) return;
 							mapdynamic[map][i][toitem] = cstamp.after(e);
 							if (q) it[j] += toitem + Server.percent0_x(2, i);
 							else {
@@ -1099,7 +1159,7 @@ class Server {
 								for (let j = 0; j < m.length; j++) {
 									f = true;
 									for (k in mapdynamic[m[j].map][m[j].z]) { f = false; break }
-									if (f) savedynamic(m[j].map, "F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97), 60, m[j].z);
+									if (f) savedynamic(m[j].map, ("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, m[j].z);
 								}
 								if (Math.random() < .5) xform("Ia", 60);
 								else if (Math.random() < .5) xform(("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60);
@@ -1125,7 +1185,7 @@ class Server {
 				}
 				for (i = 0; i < 4; i++)if (it[i] || !q) print += "i" + i + "=" + it[i] + "\n";
 			}
-			function statics(map, q) {
+			function statics(map: WorldCoord, q: 0 | 1 | 2 | 3 | 4 = 0) {
 				var s, i, t, z,
 					j = q - 1,
 					st = ["", "", "", ""];
@@ -1141,11 +1201,11 @@ class Server {
 				for (i = 0; i < 4; i++)if (st[i] || !q) print += "s" + i + "=" + st[i] + "\n";
 			}
 		}
-		function zconv(z: number) {
+		function zconv(z: number): [1 | 2 | 3 | 4, number] {
 			var q = 1, y = Math.floor(z / MapWide), x = z - (y * MapWide);
 			if (y > MapSizeY) { q = 3; y -= MapSizeY1 }
 			if (x > MapSizeX) { q++; x -= MapSizeX1 }
-			return [q, y * MapSizeX1 + x];
+			return [q as 1 | 2 | 3 | 4, y * MapSizeX1 + x];
 		}
 		function token(): { a1: UpperLetter, b1: Digit, a2: UpperLetter, b2: Digit } {
 			let z: number,
