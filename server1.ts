@@ -493,22 +493,26 @@ class Server {
 			},
 			plant: function () {
 				if (player.inven.indexOf("Ei") < 0) return print += "pop=Need Water!\n";
-				let tileset, plant,
+				let tileset = world.loadmap(player.tmap),
+					plant:[ItemID,number,ItemID],
 					slotitem = form.j.split("-"),
 					slot = +slotitem[0];
-				if (slot < NumInven && slotitem[1].length === 2 && player.inven.substr(slot *= 10, 2) === slotitem[1]) {
-					tileset = world.loadmap(player.tmap);
-					let g = tileset.substr(player.tz * 2, 1);
+				if (slot < NumInven && slotitem[1].length === 2 && player.inven.getSlotItemID(slot) === slotitem[1]) {
+					let g = tileset.getTileClass(player.tz);
 					if (g === "F" || g === "G") {
-						if (plant = {
+						if (
+							(plant = {
 								Fa: ["Ia", 60, "Za"],
 								Fb: ["Ia", 60, "Fa"],
 								Fc: ["Ia", 60, "Fd"],
 								Fd: ["Ia", 60, "Fc"]
-						}[slotitem[1]]) {
-							savedynamic(player.tmap, plant[0], new Stamp(plant[1],cstamp), player.tz);
-							player.inven = player.inven.substring(0, slot) + plant[2] + ("Za" === plant[2] ? "00000000" : player.inven.substr(slot + 2, 8)) + player.inven.substr(slot + 10);
-							player.inven.replace(/Ei/, "Bd");
+							}[slotitem[1]]
+							)&&("Za"===plant[2]
+								?player.inven.rm(slotitem[1]).id===slotitem[1] // use last seed
+								:player.inven.chg(slotitem[1],plant[2]) // reduce seed stack
+							)&&player.inven.chg("Ei", "Bd") // water from bucket
+						) {
+							savedynamic(player.tmap, plant[0], new Stamp(plant[1], cstamp), player.tz);
 							inv();
 							print += "pop=Planted\n";
 						}
