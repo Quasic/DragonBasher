@@ -35,7 +35,9 @@ type ItemID = `${UpperLetter}${LowerLetter}`;
 class Stamp {
 	private stamp: number;
 	constructor(offset: number = 0, stamp: number | Stamp = Math.floor((new Date()).getTime() / 60000)) {
-		this.stamp = (stamp instanceof Stamp ? stamp.toValue() : stamp) + offset;
+		let t=(stamp instanceof Stamp ? stamp.toValue() :stamp);
+		if(0===t&&0===offset)t=Infinity; // old code used 0 stamp value for infinity due to serialization in hex
+		this.stamp = Math.max(1,t); // must be positive
 	}
 	isAfter(t:Stamp):boolean{return this.stamp>t.stamp}
 	since(t: Stamp): number { return this.stamp - t.stamp }
@@ -43,8 +45,8 @@ class Stamp {
 	minutesUntilStampValue(minutes: number) { return minutes - this.stamp }
 	toValue() { return this.stamp }
 	toString() { return "" + this.stamp }
-	serialize(): string { return Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
-	static unserialize(s: string): Stamp { let t = parseInt(s, 36); return new Stamp(0, isNaN(t) ? 0 : t) }
+	serialize(): string { return Infinity===this.stamp?"!":Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
+	static unserialize(s: string): Stamp { let t = "!"===s?Infinity:parseInt(s, 36); return new Stamp(0, isNaN(t) ? 0 : t) }
 	static _1 = new Stamp(-1, 0);
 }
 
@@ -121,7 +123,7 @@ class Inv {
 		let i = 0, r = Infinity === this.max ? "!" : "" + this.max;
 		while (i < n) r += this.inv[i++].serialize();
 		if (i < n) {
-			let x = (new Item()).serialize();
+			let x = Item.Za.serialize();
 			for (; i < n; i++)r += x;
 		}
 		return r;
@@ -388,7 +390,7 @@ class Server {
 			if (player === this.player) {
 				let s = Cookie.get("plyr" + form.n);
 				if (s) {
-					let t = s.match(/^(0-9+)([FMn][0-9e][0-9w][A-Za-z]*)([0-9]{2})([0-9]+)([A-Z][^A-Z]){2}((!|[0-9]*)([A-Z][a-z][0-9]{8})+)$/);//._-*
+					let t = s.match(/^(0-9+)([FMn][0-9e][0-9w][A-Za-z]*)([0-9]{2})([0-9]+)([A-Z][^A-Z]){2}((!|[0-9]*)([A-Z][a-z][^A-Z]+)+)$/);//._-*
 					if (!t) return q.error(form, cstamp.toString(), "Player file corrupt\n");
 					player.one = new Stamp(0, +t[1]);
 					player.object = t[2];
