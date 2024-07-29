@@ -621,7 +621,7 @@ if(window.console)console.log(cstamp,"tele",mapz);
 						if(estamp&&cstamp>estamp){
 							print+="pop=^"+invitem+" expired\n";
 							player.inven=player.inven.substring(0,i*10)+"Za00000000"+player.inven.substr(i*10+10);
-							if(player.inven.indexOf()<0){
+							if(player.inven.indexOf(invitem)<0){
 								form.j=invitem;
 								remove();
 							}
