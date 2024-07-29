@@ -83,11 +83,16 @@ class Inv {
 		return slot<0||slot>=this.max||!(this.inv[slot] instanceof Item)||this.inv[slot].id!==id?new Item():this.inv[slot];
 	}
 	rm(id: ItemID, slot: number = this.indexOf(id),replaceWith:Item=new Item()): Item {
-		if (slot < 0 || slot >= this.max || slot>=this.inv.length||!(this.inv[slot] instanceof Item)||this.inv[slot].id !== id) return new Item();
-		let item = this.inv[slot];
-		this.inv[slot] = replaceWith;
-		while(this.inv.length&&(!((item=this.inv[this.inv.length-1]) instanceof Item)||item.id==="Za"))this.inv.length--; // collect garbage @ end
+		let inv=this.inv,item:Item;
+		if (slot < 0 || slot >= this.max || slot>=inv.length||!((item=inv[slot]) instanceof Item)||item.id !== id) return new Item();
+		inv[slot] = replaceWith;
+		while(inv.length&&(!((item=inv[inv.length-1]) instanceof Item)||item.id==="Za"))inv.length--; // collect garbage @ end
 		return item;
+	}
+	chg(from:ItemID,to:ItemID,slot: number = this.indexOf(from)):boolean{
+		if (slot < 0 || slot >= this.max || slot>=this.inv.length||!(this.inv[slot] instanceof Item)||this.inv[slot].id !== from) return false;
+		this.inv[slot]=new Item(to,this.inv[slot].expires);
+		return true;
 	}
 	static unserialize(s: string, fallbackmax: number = 24): Inv {
 		let a = s.split(/([A-Z][^A-Z]+)/g).filter(Boolean), b = a[0].charAt(0), c = "!" === b ? Infinity : b === b.toUpperCase() ? fallbackmax : parseInt(a.shift() || "NaN" as never), d: Item[] = [];
@@ -1206,20 +1211,15 @@ class Server {
 				xf.drop();
 				return true;
 			} else if ((p = player.inven.indexOf("Dj")) >= 0) {
-				player.inven.rm("Dj",p);
-				tileinv.add(new Item());
-				savedynamic(player.tmap, "Zj", newstamp("Zj"), player.tz);
-				player.inven = player.inven.substring(0, p) + "Za00000000" + player.inven.substr(p + 10);
+				if(player.inven.rm("Dj",p).id==="Dj")tileinv.add(new Item("Zj", newstamp("Zj")));
 				inv();
 				return true;
 			} else if ((p = player.inven.indexOf("Dk")) >= 0) {
-				savedynamic(player.tmap, "Zj", newstamp("Zj"), player.tz);
-				player.inven = player.inven.substring(0, p) + "Dj" + player.inven.substr(p + 2);
+				if(player.inven.chg("Dk","Dj",p))tileinv.add(new Item("Zj", newstamp("Zj")));
 				inv();
 				return true;
 			} else if ((p = player.inven.indexOf("Dl")) >= 0) {
-				savedynamic(player.tmap, "Zj", newstamp("Zj"), player.tz);
-				player.inven = player.inven.substring(0, p) + "Dk" + player.inven.substr(p + 2);
+				if(player.inven.chg("Dl","Dk",p))tileinv.add(new Item("Zj", newstamp("Zj")));
 				inv();
 				return true;
 			}
