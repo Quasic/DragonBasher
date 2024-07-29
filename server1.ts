@@ -58,7 +58,7 @@ class Item {
 	}
 	serialize(): string { return this.id + this.expireStamp.serialize() }
 	static unserialize(s: string): Item { return new Item(s.substring(0, 2) as ItemID, Stamp.unserialize(s.substring(2))) }
-	static newlife(id: ItemID): number { return Item.newstampo[id] || 60; }
+	static lifetime(id: ItemID): number { return Item.newstampo[id] || 60; }
 	private static newstampo: { [k: string]: number } = { //default lifetimes of items, used by newstamp()
 		Ga: 3600,//minnow
 		Gd: 86400,//crab
@@ -1264,7 +1264,7 @@ class Server {
 			player.object = player.object.replace(form.j, '');
 		}
 		function newstamp(item) {
-			return new Stamp(Item.newlife(item), cstamp);
+			return new Stamp(Item.lifetime(item), cstamp);
 		}
 		function savedynamic(map: WorldCoord, item: ItemID, e: number | Stamp, tz: number) {
 			world.loadmap(map).getInv(tz).add(new Item(item, new Stamp(0, e)));
