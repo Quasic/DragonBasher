@@ -86,6 +86,7 @@ class Inv {
 		if (slot < 0 || slot >= this.max || slot>=this.inv.length||!(this.inv[slot] instanceof Item)||this.inv[slot].id !== id) return new Item();
 		let item = this.inv[slot];
 		this.inv[slot] = replaceWith;
+		while(this.inv.length&&(!((item=this.inv[this.inv.length-1]) instanceof Item)||item.id==="Za"))this.inv.length--; // collect garbage @ end
 		return item;
 	}
 	static unserialize(s: string, fallbackmax: number = 24): Inv {
@@ -1205,6 +1206,8 @@ class Server {
 				xf.drop();
 				return true;
 			} else if ((p = player.inven.indexOf("Dj")) >= 0) {
+				player.inven.rm("Dj",p);
+				tileinv.add(new Item());
 				savedynamic(player.tmap, "Zj", newstamp("Zj"), player.tz);
 				player.inven = player.inven.substring(0, p) + "Za00000000" + player.inven.substr(p + 10);
 				inv();
