@@ -96,6 +96,7 @@ class Inv {
 	examine(id: ItemID, slot: number = this.indexOf(id)): Item {
 		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== id ? Item.Za : this.inv[slot];
 	}
+	getLength(){return this.inv.length}
 	getSlotItemID(slot: number): ItemID {
 		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? "Za" : this.inv[slot].id;
 	}
@@ -134,6 +135,12 @@ class Inv {
 		for (; i < min; i++)r += "Za";
 		return r;
 	}
+	expiration(now:Stamp,xchgf:(item:Item)=>Item=(I)=>Item.Za){
+		for(let item:Item,i=0;i<this.inv.length;i++){
+			item=this.inv[i];
+			if(!(item instanceof Item)||now.isAfter(item.expireStamp))this.inv[i]=xchgf(this.inv[i]);
+		}
+	}
 }
 
 class Player {
@@ -170,6 +177,7 @@ class Tileset {
 		if (typeof d === "undefined") this.dynamic.set(z, d = new Inv());
 		return d;
 	}
+	getInvKeys(){return this.dynamic.keys}
 	constructor(private map: string, st: string = "") {
 		//parse st into this.st
 	}
@@ -1128,29 +1136,19 @@ class Server {
 				}
 			}
 			function items(map: WorldCoord, q: 0 | 1 | 2 | 3 | 4 = 0) {
-				let i, t, z,
-					j = q - 1,
-					//tileset=loadmap(map), //why?
+				let j = q - 1,
+					tileset=world.loadmap(map),
+					zlist=tileset.getInvKeys(),
+					inv:Inv,
 					it = ["", "", "", ""];
-				if (window.console) console.log("items", map, q, mapdynamic)
+				//if (window.console) console.log("items", map, q)
 				//tokens 0=t (tile) 1=mapdynamic[map][i][t] (expiration) 2=i (tz)
-				if ("object" === typeof mapdynamic[map]) for (i in mapdynamic[map]) if (!mapdynamic[map].hasOwnProperty || mapdynamic[map].hasOwnProperty(i)) if ("object" === typeof mapdynamic[map][i]) for (t in mapdynamic[map][i]) if (!mapdynamic[map][i].hasOwnProperty || mapdynamic[map][i].hasOwnProperty(t)) {
-					if (window.console) console.log(cstamp, "item", mapdynamic[map][i][t], i, t);
-					if (cstamp > mapdynamic[map][i][t]) {
-						mapdynamic[map][i][t] = undefined;
-						delete mapdynamic[map][i][t];
-						function xform(toitem: ItemID, e: number = 60, tileregex?: RegExp) {
-							if (tileregex && !world.loadmap(map).getTile(i).match(tileregex)) return;
-							mapdynamic[map][i][toitem] = cstamp.after(e);
-							if (q) it[j] += toitem + Server.percent0_x(2, i);
-							else {
-								z = zconv(i);
-								it[z[0]] += toitem + Server.percent0_x(2, z[1]);
-							}
-						}
+				for (let zi=0;zi<zlist.length;zi++)if ((inv=tileset.getInv(i=zlist[zi])) instanceof Inv){
+					inv.expiration(cstamp,(item:Item)=>{
+						let xform:[ItemID,number,RegExp|null]=["Za",Infinity,null];
 						({ //g-[A-Z][a-z].pl
 							Dh: function () {
-								if (Math.random() < .65) xform("Ia", 60, /^[FG]/);
+								if (Math.random() < .65) xform=["Ia", 60, /^[FG]/];
 							},
 							Ia: function () {
 								let y = Math.floor(i / MapWide),
@@ -1161,31 +1159,33 @@ class Server {
 								if (Math.random() < .25) m[m.length] = tileup();
 								if (Math.random() < .25) m[m.length] = tiledown();
 								for (let j = 0; j < m.length; j++) {
-									f = true;
-									for (k in mapdynamic[m[j].map][m[j].z]) { f = false; break }
-									if (f) savedynamic(m[j].map, ("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, m[j].z);
+									if (world.loadmap(m[j].map).getInv(m[j].z).getLength()<1) savedynamic(m[j].map, ("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, m[j].z);
 								}
-								if (Math.random() < .5) xform("Ia", 60);
-								else if (Math.random() < .5) xform(("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60);
+								if (Math.random() < .5) xform=["Ia", 60,null];
+								else if (Math.random() < .5) xform=[("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60,null];
 							},
 							Fa: function () {
-								if (Math.random() < .45) xform("Ia", 60, /^[FG]/);
+								if (Math.random() < .45) xform=["Ia", 60, /^[FG]/];
 							},
 							Fb: function () {
-								if (Math.random() < .5) xform("Ia", 60, /^[FG]/);
+								if (Math.random() < .5) xform=["Ia", 60, /^[FG]/];
 							},
 							Fc: function () {
-								if (Math.random() < .55) xform("Ia", 60, /^[FG]/);
+								if (Math.random() < .55) xform=["Ia", 60, /^[FG]/];
 							},
 							Fd: function () {
-								if (Math.random() < .6) xform("Ia", 60, /^[FG]/);
+								if (Math.random() < .6) xform=["Ia", 60, /^[FG]/];
 							}
-						}[t] || nop)();
-					} else if (q) it[j] += t + Server.percent0_x(2, i);
-					else {
-						z = zconv(i);
-						it[z[0]] += t + Server.percent0_x(2, z[1]);
+						}[item.id] || nop)();
+						if (xform[2] instanceof RegExp && !world.loadmap(map).getTile(i).match(xform[2])) return Item.Za;
+						return new Item(xform[0],new Stamp(xform[1],cstamp));
+					});
+					if(!q){
+						let z=zconv(i);
+						j=z[0];
+						i=z[1];
 					}
+					for(let item:Item,slot=0;slot<NumInven;slot++)if((item=inv.getSlotItem(slot)).id!=="Za")it[j] += item.id + Server.percent0_x(2, i);
 				}
 				for (i = 0; i < 4; i++)if (it[i] || !q) print += "i" + i + "=" + it[i] + "\n";
 			}
@@ -1256,9 +1256,7 @@ class Server {
 			}
 		}
 		function inv() {
-			var i, v = "";
-			for (i = 0; i < NumInven; i++)v += player.inven.substr(i * 10, 2);
-			print += "inv=" + v + "\n";
+			print += "inv=" + player.inven.serializeItemIDs(NumInven) + "\n";
 		}
 		function remove() {
 			player.object = player.object.replace(form.j, '');
