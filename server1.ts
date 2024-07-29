@@ -37,6 +37,7 @@ class Stamp {
 	constructor(offset: number = 0, stamp: number | Stamp = Math.floor((new Date()).getTime() / 60000)) {
 		this.stamp = (stamp instanceof Stamp ? stamp.toValue() : stamp) + offset;
 	}
+	isAfter(t:Stamp):boolean{return this.stamp>t.stamp}
 	since(t: Stamp): number { return this.stamp - t.stamp }
 	after(min: number) { return this.stamp + min }
 	minutesUntilStampValue(minutes: number) { return minutes - this.stamp }
@@ -49,11 +50,11 @@ class Stamp {
 
 class Item {
 	public id: ItemID;
-	constructor(id: ItemID = "Za", public expires: Stamp = new Stamp(0, 0)) {
+	constructor(id: ItemID = "Za", public expireStamp: Stamp = new Stamp()) {
 		let a: UpperLetter = id.charAt(0) as UpperLetter, b: LowerLetter = id.charAt(1) as LowerLetter;
 		this.id = a < "A" || a > "Z" || a != a.toUpperCase() || b < "a" || b > "z" || b != b.toLowerCase() ? "Za" : id; // verify types or corruption stops here
 	}
-	serialize(): string { return this.id + this.expires.serialize() }
+	serialize(): string { return this.id + this.expireStamp.serialize() }
 	static unserialize(s: string): Item { return new Item(s.substring(0, 2) as ItemID, Stamp.unserialize(s.substring(2))) }
 	static newlife(id: ItemID): number { return Item.newstampo[id] || 60; }
 	private static newstampo: { [k: string]: number } = { //default lifetimes of items, used by newstamp()
@@ -63,6 +64,7 @@ class Item {
 		Za: 0,//nothing
 		Zj: 60//fire
 	};
+	static readonly Za=new Item("Za",new Stamp(0,Infinity));
 }
 
 class Inv {
@@ -90,24 +92,24 @@ class Inv {
 		return true;
 	}
 	examine(id: ItemID, slot: number = this.indexOf(id)): Item {
-		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== id ? new Item() : this.inv[slot];
+		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== id ? Item.Za : this.inv[slot];
 	}
 	getSlotItemID(slot: number): ItemID {
 		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? "Za" : this.inv[slot].id;
 	}
 	getSlotItem(slot: number): Item {
-		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? new Item() : this.inv[slot];
+		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? Item.Za : this.inv[slot];
 	}
-	rm(id: ItemID, slot: number = this.indexOf(id), replaceWith: Item = new Item()): Item {
+	rm(id: ItemID, slot: number = this.indexOf(id), replaceWith: Item = Item.Za): Item {
 		let inv = this.inv, item: Item;
-		if (slot < 0 || slot >= this.max || slot >= inv.length || !((item = inv[slot]) instanceof Item) || item.id !== id) return new Item();
+		if (slot < 0 || slot >= this.max || slot >= inv.length || !((item = inv[slot]) instanceof Item) || item.id !== id) return Item.Za;
 		inv[slot] = replaceWith;
 		while (inv.length && (!((item = inv[inv.length - 1]) instanceof Item) || item.id === "Za")) inv.length--; // collect garbage @ end
 		return item;
 	}
 	chg(from: ItemID, to: ItemID, slot: number = this.indexOf(from)): boolean {
 		if (slot < 0 || slot >= this.max || slot >= this.inv.length || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== from) return false;
-		this.inv[slot] = new Item(to, this.inv[slot].expires);
+		this.inv[slot] = new Item(to, this.inv[slot].expireStamp);
 		return true;
 	}
 	static unserialize(s: string, fallbackmax: number = 24): Inv {
@@ -640,7 +642,7 @@ class Server {
 						let j = d.rm(form.j, i);
 						if (form.j.charAt(0) === "F") {
 							// convert food timestamp from seconds to minutes
-							j.expires = new Stamp(Math.min(j.expires.since(cstamp), 60) * 60, cstamp);
+							j.expireStamp = new Stamp(Math.min(j.expireStamp.since(cstamp), 60) * 60, cstamp);
 						}
 						player.inven.add(j, f);
 						inv();
@@ -655,7 +657,7 @@ class Server {
 					slot = +slotitem[0] * 10,
 					item = player.inven.rm(slotitem[1], slot);
 				if (item.id.charAt(0) == "F") {
-					item.expires = new Stamp(Math.min(item.expires.since(cstamp) / 60, 60), cstamp);
+					item.expireStamp = new Stamp(Math.min(item.expireStamp.since(cstamp) / 60, 60), cstamp);
 				}
 				world.loadmap(player.tmap).getInv(player.tz).add(item);
 				inv();
@@ -935,7 +937,7 @@ class Server {
 					let inv = '', estamp, item: Item;
 					for (let i = 0; i < NumInven; i++) {
 						item = player.inven.getSlotItem(i);
-						if (item.expires.since(cstamp) < 0 && item.id !== "Za") {
+						if (cstamp.isAfter(item.expireStamp) && item.id !== "Za") {
 							print += "pop=^" + item + " expired\n";
 							player.inven.rm(item.id, i);
 							if (player.inven.indexOf(item.id) < 0) {
