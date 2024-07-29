@@ -38,7 +38,7 @@ class Stamp {
 	}
 	since(t: Stamp): number { return this.stamp - t.stamp }
 	after(min: number) { return this.stamp + min }
-	minUntilStampValue(min: number) { return min - this.stamp }
+	minutesUntilStampValue(minutes: number) { return minutes - this.stamp }
 	toValue() { return this.stamp }
 	toString() { return "" + this.stamp }
 	serialize(): string { return Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
@@ -75,12 +75,15 @@ class Inv {
 		return -1;
 	}
 	add(item: Item, slot: number = this.indexOf("Za")): boolean {
-		if (slot < 0 || slot >= this.max||(slot<this.inv.length&&this.inv[slot] instanceof Item&&this.inv[slot].id !== "Za"))return false;
+		if ("Za"===item.id||slot < 0 || slot >= this.max||(slot<this.inv.length&&this.inv[slot] instanceof Item&&this.inv[slot].id !== "Za"))return false;
 		this.inv[slot] = item;
 		return true;
 	}
 	examine(id:ItemID,slot:number=this.indexOf(id)):Item{
 		return slot<0||slot>=this.max||!(this.inv[slot] instanceof Item)||this.inv[slot].id!==id?new Item():this.inv[slot];
+	}
+	getSlotItemID(slot:number):ItemID{
+		return slot<0||slot>=this.max||!(this.inv[slot] instanceof Item)?"Za":this.inv[slot].id;
 	}
 	rm(id: ItemID, slot: number = this.indexOf(id),replaceWith:Item=new Item()): Item {
 		let inv=this.inv,item:Item;
@@ -554,7 +557,7 @@ class Server {
 				var slotitem = form.j.split("-"),
 					slot = +slotitem[0],
 					invitem = player.inven.substr(slot * 10, 2),
-					invstamp = cstamp.minUntilStampValue(parseInt(player.inven.substr(slot * 10 + 2, 8), 16));
+					invstamp = cstamp.minutesUntilStampValue(parseInt(player.inven.substr(slot * 10 + 2, 8), 16));
 				if (invitem === slotitem[1]) {
 					print += "pop=^" + slotitem[1] + " expires in " + (invstamp > 86400 ? Math.floor(invstamp / 86400) + " days" : invstamp > 3600 ? Math.floor(invstamp / 3600) + " hours" : invstamp > 60 ? Math.floor(invstamp / 60) + " minutes" : invstamp + " seconds") + "\n";
 				}
@@ -579,23 +582,17 @@ class Server {
 				}
 			},
 			drop: function () {
-				var slotitem = form.j.split("-"),
-					slot = +slotitem[0] * 10;
-				var invitem = player.inven.substr(slot, 2),
-					invstamp = player.inven.substr(slot + 2, 8);
-				if (invitem == slotitem[1] && !(mapdynamic[player.tmap] && mapdynamic[player.tmap][player.tz] && mapdynamic[player.tmap][player.tz][invitem])) {
-					if (invitem.charAt(0) == "F") {
-						let istamp = Math.floor(cstamp.minUntilStampValue(parseInt("0x" + invstamp)) / 60);
-						if (istamp > 60) istamp = 60;
-						invstamp = Server.percent0_x(8, cstamp.after(istamp));
-					}
-					savedynamic(player.tmap, invitem, invstamp, player.tz);
-					player.inven = player.inven.substring(0, slot) + "Za00000000" + player.inven.substr(slot + 10)
-					inv();
-					if (player.object.indexOf(invitem) >= 0) {
-						form.j = invitem;
-						remove();
-					}
+				let slotitem = form.j.split("-"),
+					slot = +slotitem[0] * 10,
+					item=player.inven.rm(slotitem[1],slot);
+				if (item.id.charAt(0) == "F") {
+					item.expires = new Stamp(Math.min(item.expires.since(cstamp),60),cstamp);
+				}
+				world.loadmap(player.tmap).getInv(player.tz).add(item);
+				inv();
+				if (player.object.indexOf(item.id) >= 0) {
+					form.j = item.id;
+					remove();
 				}
 				xf.refresh();
 			},
