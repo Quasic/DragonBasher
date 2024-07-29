@@ -53,8 +53,8 @@ class Item {
 	}
 	serialize(): string { return this.id + this.expires.serialize() }
 	static unserialize(s: string): Item { return new Item(s.substring(0, 2) as ItemID, Stamp.unserialize(s.substring(2))) }
-	static newlife(id:ItemID):number{return Item.newstampo[id]||60;}
-	private static newstampo:{[k:string]:number} = { //default lifetimes of items, used by newstamp()
+	static newlife(id: ItemID): number { return Item.newstampo[id] || 60; }
+	private static newstampo: { [k: string]: number } = { //default lifetimes of items, used by newstamp()
 		Ga: 3600,//minnow
 		Gd: 86400,//crab
 		Ge: 86400,//carp
@@ -75,26 +75,26 @@ class Inv {
 		return -1;
 	}
 	add(item: Item, slot: number = this.indexOf("Za")): boolean {
-		if ("Za"===item.id||slot < 0 || slot >= this.max||(slot<this.inv.length&&this.inv[slot] instanceof Item&&this.inv[slot].id !== "Za"))return false;
+		if ("Za" === item.id || slot < 0 || slot >= this.max || (slot < this.inv.length && this.inv[slot] instanceof Item && this.inv[slot].id !== "Za")) return false;
 		this.inv[slot] = item;
 		return true;
 	}
-	examine(id:ItemID,slot:number=this.indexOf(id)):Item{
-		return slot<0||slot>=this.max||!(this.inv[slot] instanceof Item)||this.inv[slot].id!==id?new Item():this.inv[slot];
+	examine(id: ItemID, slot: number = this.indexOf(id)): Item {
+		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== id ? new Item() : this.inv[slot];
 	}
-	getSlotItemID(slot:number):ItemID{
-		return slot<0||slot>=this.max||!(this.inv[slot] instanceof Item)?"Za":this.inv[slot].id;
+	getSlotItemID(slot: number): ItemID {
+		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? "Za" : this.inv[slot].id;
 	}
-	rm(id: ItemID, slot: number = this.indexOf(id),replaceWith:Item=new Item()): Item {
-		let inv=this.inv,item:Item;
-		if (slot < 0 || slot >= this.max || slot>=inv.length||!((item=inv[slot]) instanceof Item)||item.id !== id) return new Item();
+	rm(id: ItemID, slot: number = this.indexOf(id), replaceWith: Item = new Item()): Item {
+		let inv = this.inv, item: Item;
+		if (slot < 0 || slot >= this.max || slot >= inv.length || !((item = inv[slot]) instanceof Item) || item.id !== id) return new Item();
 		inv[slot] = replaceWith;
-		while(inv.length&&(!((item=inv[inv.length-1]) instanceof Item)||item.id==="Za"))inv.length--; // collect garbage @ end
+		while (inv.length && (!((item = inv[inv.length - 1]) instanceof Item) || item.id === "Za")) inv.length--; // collect garbage @ end
 		return item;
 	}
-	chg(from:ItemID,to:ItemID,slot: number = this.indexOf(from)):boolean{
-		if (slot < 0 || slot >= this.max || slot>=this.inv.length||!(this.inv[slot] instanceof Item)||this.inv[slot].id !== from) return false;
-		this.inv[slot]=new Item(to,this.inv[slot].expires);
+	chg(from: ItemID, to: ItemID, slot: number = this.indexOf(from)): boolean {
+		if (slot < 0 || slot >= this.max || slot >= this.inv.length || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== from) return false;
+		this.inv[slot] = new Item(to, this.inv[slot].expires);
 		return true;
 	}
 	static unserialize(s: string, fallbackmax: number = 24): Inv {
@@ -102,12 +102,12 @@ class Inv {
 		for (let i = 0; i < s.length; i++)d[i] = Item.unserialize(a[i]);
 		return new Inv(d, isNaN(c) ? fallbackmax : c);
 	}
-	serialize(n:number=Math.min(this.inv.length,this.max)): string {
-		let i=0,r = Infinity === this.max ? "!" : "" + this.max;
-		while ( i < n)r += this.inv[i++].serialize();
-		if(i<n){
-			let x=(new Item()).serialize();
-			for(;i<n;i++)r+=x;
+	serialize(n: number = Math.min(this.inv.length, this.max)): string {
+		let i = 0, r = Infinity === this.max ? "!" : "" + this.max;
+		while (i < n) r += this.inv[i++].serialize();
+		if (i < n) {
+			let x = (new Item()).serialize();
+			for (; i < n; i++)r += x;
 		}
 		return r;
 	}
@@ -122,7 +122,7 @@ class Inv {
 class Player {
 	// bots would also use this object
 	// initialization is handled by server
-	constructor(public name: string, public object: string = "new", public map: WorldCoord = "B2", public z: number = 88,public inven:Inv=new Inv()) {
+	constructor(public name: string, public object: string = "new", public map: WorldCoord = "B2", public z: number = 88, public inven: Inv = new Inv()) {
 		this.tz = this.z;
 		this.tmap = this.map;
 	}
@@ -149,13 +149,15 @@ class Tileset {
 	private st: Static[] = [];
 	private dynamic: Map<number, Inv> = new Map();
 	getInv(z: number): Inv {
-		let d=this.dynamic.get(z);
-		if(typeof d==="undefined")this.dynamic.set(z,d= new Inv());
+		let d = this.dynamic.get(z);
+		if (typeof d === "undefined") this.dynamic.set(z, d = new Inv());
 		return d;
-	 }
+	}
 	constructor(private map: string, st: string = "") {
 		//parse st into this.st
 	}
+	getTileClass(z:number):UpperLetter{return this.map.charAt(2*z)}
+	getTile(z:number):Tile{return this.map.substr(2*z,2)}
 	//type Ttileset=;
 	static fill(tile: Tile = "Ua"): string {
 		let tileset = "";
@@ -329,7 +331,7 @@ class Server {
 					player.z = +t[4];
 					player.map = t[5] as WorldCoord;
 					player.tmap = t[6] as WorldCoord;
-					player.inven=Inv.unserialize(t[7],NumInven);
+					player.inven = Inv.unserialize(t[7], NumInven);
 					//player.token, player.ts, player.tz generated as needed
 				} else {
 					//reinitialize to new player, assuming old one logged out
@@ -338,7 +340,7 @@ class Server {
 					player.h = 60;
 					player.z = player.tz = 88;
 					player.map = player.tmap = "B2";
-					player.inven = new Inv([],NumInven);
+					player.inven = new Inv([], NumInven);
 					if (player === this.player) saveplayer();
 					print += "create=" + player.name + "\n";
 				}
@@ -358,7 +360,7 @@ class Server {
 				print += "logout=\n";
 			},
 			reset: function () {
-				player.inven = new Inv([],NumInven);
+				player.inven = new Inv([], NumInven);
 				inv();
 				print += "pop=Reset\n";
 			},
@@ -499,10 +501,10 @@ class Server {
 					let g = tileset.substr(player.tz * 2, 1);
 					if (g === "F" || g === "G") {
 						if (plant = {
-							Fa: ["Ia", 60, "Za"],
-							Fb: ["Ia", 60, "Fa"],
-							Fc: ["Ia", 60, "Fd"],
-							Fd: ["Ia", 60, "Fc"]
+								Fa: ["Ia", 60, "Za"],
+								Fb: ["Ia", 60, "Fa"],
+								Fc: ["Ia", 60, "Fd"],
+								Fd: ["Ia", 60, "Fc"]
 						}[slotitem[1]]) {
 							savedynamic(player.tmap, plant[0], new Stamp(plant[1],cstamp), player.tz);
 							player.inven = player.inven.substring(0, slot) + plant[2] + ("Za" === plant[2] ? "00000000" : player.inven.substr(slot + 2, 8)) + player.inven.substr(slot + 10);
@@ -563,17 +565,17 @@ class Server {
 				}
 			},
 			get: function () {
-				let d=world.loadmap(player.tmap).getInv(player.tz),
-					i=d.indexOf(form.j);
-				if (i>-1) {
+				let d = world.loadmap(player.tmap).getInv(player.tz),
+					i = d.indexOf(form.j);
+				if (i > -1) {
 					var f = player.inven.indexOf("Za");
 					if (f > -1) {
-						let j=d.rm(form.j,i);
+						let j = d.rm(form.j, i);
 						if (form.j.charAt(0) === "F") {
 							// convert food timestamp from seconds to minutes
-							j.expires=new Stamp(Math.min(j.expires.since(cstamp), 60) * 60,cstamp);
+							j.expires = new Stamp(Math.min(j.expires.since(cstamp), 60) * 60, cstamp);
 						}
-						player.inven.add(j,f);
+						player.inven.add(j, f);
 						inv();
 						print += "dinv=1\n";
 					} else print += "pop=no space " + f + "\n";
@@ -584,9 +586,9 @@ class Server {
 			drop: function () {
 				let slotitem = form.j.split("-"),
 					slot = +slotitem[0] * 10,
-					item=player.inven.rm(slotitem[1],slot);
+					item = player.inven.rm(slotitem[1], slot);
 				if (item.id.charAt(0) == "F") {
-					item.expires = new Stamp(Math.min(item.expires.since(cstamp),60),cstamp);
+					item.expires = new Stamp(Math.min(item.expires.since(cstamp) / 60, 60), cstamp);
 				}
 				world.loadmap(player.tmap).getInv(player.tz).add(item);
 				inv();
@@ -613,7 +615,7 @@ class Server {
 									},
 									Zg: function () {
 										//fishing dock
-										if (form.k.charAt(0).toUpperCase() + form.k.substr(1, 2).toLowerCase() != form.k) return print += "pop=Bad Bait!\n";
+										if (form.k.charAt(0).toUpperCase() + form.k.charAt(1).toLowerCase() != form.k) return print += "pop=Bad Bait!\n";
 										var o = ({
 											Ga: { odds: 10, tool: "Bj", bait: "", baitlossodds: 0 },
 											Gd: { odds: 10, tool: "Bj", bait: "GaGd", baitlossodds: 10 },
@@ -627,7 +629,7 @@ class Server {
 											if (o.bait) {
 												if (k < 0 || o.bait.indexOf(form.k) < 0) return print += "pop=Need Bait\n";
 												if (Math.floor(Math.random() * 100) < o.baitlossodds) {
-													player.inven = player.inven.substring(0, k) + "Za00000000" + player.inven.substr(k + 10);
+													player.inven = player.inven.substring(0, k) + "Za00000000" + player.inven.substring(k + 10);
 													inv();
 													print += "pop=Lost Bait!\n";
 												}
@@ -1194,29 +1196,29 @@ class Server {
 			player.object = player.object.replace(form.j, '');
 		}
 		function newstamp(item) {
-			return new Stamp(Item.newlife(item),cstamp);
+			return new Stamp(Item.newlife(item), cstamp);
 		}
-		function savedynamic(map:WorldCoord, item:ItemID, e:number|Stamp, tz:number) {
-			world.loadmap(map).getInv(tz).add(new Item(item,new Stamp(0,e)));
+		function savedynamic(map: WorldCoord, item: ItemID, e: number | Stamp, tz: number) {
+			world.loadmap(map).getInv(tz).add(new Item(item, new Stamp(0, e)));
 		}
 		function hasFire() {
-			let tileinv=world.loadmap(player.tmap).getInv(player.tz);
-			if ( tileinv.indexOf("Zj")>-1) return true;
+			let tileinv = world.loadmap(player.tmap).getInv(player.tz);
+			if (tileinv.indexOf("Zj") > -1) return true;
 			let p;
 			if ((p = player.inven.indexOf("Zj")) >= 0) {
 				form.j = p / 10 + "-Zj"
 				xf.drop();
 				return true;
 			} else if ((p = player.inven.indexOf("Dj")) >= 0) {
-				if(player.inven.rm("Dj",p).id==="Dj")tileinv.add(new Item("Zj", newstamp("Zj")));
+				if (player.inven.rm("Dj", p).id === "Dj") tileinv.add(new Item("Zj", newstamp("Zj")));
 				inv();
 				return true;
 			} else if ((p = player.inven.indexOf("Dk")) >= 0) {
-				if(player.inven.chg("Dk","Dj",p))tileinv.add(new Item("Zj", newstamp("Zj")));
+				if (player.inven.chg("Dk", "Dj", p)) tileinv.add(new Item("Zj", newstamp("Zj")));
 				inv();
 				return true;
 			} else if ((p = player.inven.indexOf("Dl")) >= 0) {
-				if(player.inven.chg("Dl","Dk",p))tileinv.add(new Item("Zj", newstamp("Zj")));
+				if (player.inven.chg("Dl", "Dk", p)) tileinv.add(new Item("Zj", newstamp("Zj")));
 				inv();
 				return true;
 			}
