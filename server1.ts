@@ -37,9 +37,10 @@ type Cloth = UpperLetter | LowerLetter | Digit;
 
 class Stamp {
 	private stamp: number;
-	constructor(offset: number = 0, stamp: number | Stamp = Math.floor((new Date()).getTime() / 60000)) {
-		let t = (stamp instanceof Stamp ? stamp.toValue() : stamp);
+	constructor(offset: number = 0, stamp?: number | Stamp) {
+		let t = (stamp instanceof Stamp ? stamp.toValue() : typeof stamp === "undefined" || isNaN(stamp) ? Math.floor((new Date()).getTime() / 60000) : stamp);
 		if (0 === t && 0 === offset) t = Infinity; // old code used 0 stamp value for infinity due to serialization in hex
+		if (!isNaN(offset)) t += offset;
 		this.stamp = Math.max(1, t); // must be positive
 	}
 	isAfter(t: Stamp): boolean { return this.stamp > t.stamp }
