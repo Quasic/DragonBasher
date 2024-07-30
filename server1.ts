@@ -31,6 +31,9 @@ type MoveData = { map: WorldCoord, x: number, y: number, z: number, a1: UpperLet
 type Tile = `${UpperLetter}${LowerLetter}`;
 type TileFunction = () => Tile;
 type ItemID = `${UpperLetter}${LowerLetter}`;
+type Sex="M"|"F"; // |"n";
+type Style=Digit;
+type Cloth=UpperLetter|LowerLetter|Digit;
 
 class Stamp {
 	private stamp: number;
@@ -328,7 +331,7 @@ class Server {
 				n: string,
 				p: "*",
 				c: string,
-				d: string,
+				d: `${Sex}${Style}${Cloth}`|"",
 				j: string,
 				k: ItemID,
 				m: string,
@@ -391,6 +394,8 @@ class Server {
 						// not allowed because form.s is not needed, anymore
 						break;
 					case "d":
+						allowed=decoded.match(/^[MF][0-9][A-Za-z0-9]$/)?true:false;
+						break;
 					case "j":
 					case "m":
 					case "q":
@@ -458,12 +463,8 @@ class Server {
 				print += "pop=Reset\n";
 			},
 			"char": function () {
-				if (!form.d) form.d = "";
-				var sex = form.d.charAt(0),
-					style = form.d.charAt(1).replace(/[^0-9]/g, "");
-				if (style && ("M" === sex || "F" === sex)) {
-					var cloth = form.d.charAt(2).replace(/[^A-Za-z0-9]/g, "");
-					player.object = sex + style + cloth + "R";
+				if(form.d){
+					player.object = form.d + (player.object.substring(3)||"R");
 					token();
 					xf.refresh();
 					print += "hpop=\n";
