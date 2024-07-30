@@ -179,7 +179,7 @@ class Tileset {
 	getStamp(): Stamp { return this.ts }
 	private st: Static[] = [];
 	private token: Set<Token>=new Set();
-	serializeTokens(qzconv:1|2|3|4|((z:number)=>[1 | 2 | 3 | 4, number]),stamp:Stamp=new Stamp()){
+	serializeTokens(qzconv:(z:number)=>[1 | 2 | 3 | 4, number],stamp:Stamp=new Stamp()){
 		let r="";
 		this.token.forEach((t)=>{
 			if(stamp.isAfter(t.ts))this.token.delete(t);
