@@ -31,25 +31,25 @@ type MoveData = { map: WorldCoord, x: number, y: number, z: number, a1: UpperLet
 type Tile = `${UpperLetter}${LowerLetter}`;
 type TileFunction = () => Tile;
 type ItemID = `${UpperLetter}${LowerLetter}`; // In some places, the second character can also be Digit, but not everywhere.
-type Sex="M"|"F"; // |"n";
-type Style=Digit;
-type Cloth=UpperLetter|LowerLetter|Digit;
+type Sex = "M" | "F"; // |"n";
+type Style = Digit;
+type Cloth = UpperLetter | LowerLetter | Digit;
 
 class Stamp {
 	private stamp: number;
 	constructor(offset: number = 0, stamp: number | Stamp = Math.floor((new Date()).getTime() / 60000)) {
-		let t=(stamp instanceof Stamp ? stamp.toValue() :stamp);
-		if(0===t&&0===offset)t=Infinity; // old code used 0 stamp value for infinity due to serialization in hex
-		this.stamp = Math.max(1,t); // must be positive
+		let t = (stamp instanceof Stamp ? stamp.toValue() : stamp);
+		if (0 === t && 0 === offset) t = Infinity; // old code used 0 stamp value for infinity due to serialization in hex
+		this.stamp = Math.max(1, t); // must be positive
 	}
-	isAfter(t:Stamp):boolean{return this.stamp>t.stamp}
+	isAfter(t: Stamp): boolean { return this.stamp > t.stamp }
 	since(t: Stamp): number { return this.stamp - t.stamp }
 	after(min: number) { return this.stamp + min }
 	minutesUntilStampValue(minutes: number) { return minutes - this.stamp }
 	toValue() { return this.stamp }
 	toString() { return "" + this.stamp }
-	serialize(): string { return Infinity===this.stamp?"!":Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
-	static unserialize(s: string): Stamp { let t = "!"===s?Infinity:parseInt(s, 36); return new Stamp(0, isNaN(t) ? 0 : t) }
+	serialize(): string { return Infinity === this.stamp ? "!" : Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
+	static unserialize(s: string): Stamp { let t = "!" === s ? Infinity : parseInt(s, 36); return new Stamp(0, isNaN(t) ? 0 : t) }
 	static _1 = new Stamp(-1, 0);
 }
 
@@ -69,7 +69,7 @@ class Item {
 		Za: 0,//nothing
 		Zj: 60//fire
 	};
-	static readonly Za=new Item("Za",new Stamp(0,Infinity));
+	static readonly Za = new Item("Za", new Stamp(0, Infinity));
 }
 
 class Inv {
@@ -99,7 +99,7 @@ class Inv {
 	examine(id: ItemID, slot: number = this.indexOf(id)): Item {
 		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== id ? Item.Za : this.inv[slot];
 	}
-	getLength(){return this.inv.length}
+	getLength() { return this.inv.length }
 	getSlotItemID(slot: number): ItemID {
 		return slot < 0 || slot >= this.max || !(this.inv[slot] instanceof Item) ? "Za" : this.inv[slot].id;
 	}
@@ -138,10 +138,10 @@ class Inv {
 		for (; i < min; i++)r += "Za";
 		return r;
 	}
-	expiration(now:Stamp,xchgf:(item:Item)=>Item=(I)=>Item.Za){
-		for(let item:Item,i=0;i<this.inv.length;i++){
-			item=this.inv[i];
-			if(!(item instanceof Item)||now.isAfter(item.expireStamp))this.inv[i]=xchgf(this.inv[i]);
+	expiration(now: Stamp, xchgf: (item: Item) => Item = (I) => Item.Za) {
+		for (let item: Item, i = 0; i < this.inv.length; i++) {
+			item = this.inv[i];
+			if (!(item instanceof Item) || now.isAfter(item.expireStamp)) this.inv[i] = xchgf(this.inv[i]);
 		}
 	}
 }
@@ -157,16 +157,16 @@ class Player {
 	h: number = 60;
 	tmap: WorldCoord;
 	tz: number;
-	token:Token|null=null;
+	token: Token | null = null;
 	ts: Stamp = new Stamp(0, 0);
 	tport1: string = "";
 }
 
 class Token {
-	level:3=3; // unused, inherited from Queville
-	constructor(public name:string,public z:number,public ts:Stamp=new Stamp(60),public object:string="new",public TickObj:string=""){}
-	serialize(qzconv:(z:number)=>[1 | 2 | 3 | 4, number]):string{
-		return "p=" + this.name + " " + this.level + " " + this.object+ "-" + this.TickObj + " " + qzconv(this.z).join("-") + "\n";
+	level: 3 = 3; // unused, inherited from Queville
+	constructor(public name: string, public z: number, public ts: Stamp = new Stamp(60), public object: string = "new", public TickObj: string = "") { }
+	serialize(qzconv: (z: number) => [1 | 2 | 3 | 4, number]): string {
+		return "p=" + this.name + " " + this.level + " " + this.object + "-" + this.TickObj + " " + qzconv(this.z).join("-") + "\n";
 	}
 	// unserialize is only needed in client, since these are volitile by nature
 }
@@ -178,21 +178,21 @@ class Tileset {
 	private ts: Stamp = new Stamp();
 	getStamp(): Stamp { return this.ts }
 	private st: Static[] = [];
-	private token: Set<Token>=new Set();
-	serializeTokens(qzconv:(z:number)=>[1 | 2 | 3 | 4, number],stamp:Stamp=new Stamp()){
-		let r="";
-		this.token.forEach((t)=>{
-			if(stamp.isAfter(t.ts))this.token.delete(t);
-			else r+=t.serialize(qzconv);
+	private token: Set<Token> = new Set();
+	serializeTokens(qzconv: (z: number) => [1 | 2 | 3 | 4, number], stamp: Stamp = new Stamp()) {
+		let r = "";
+		this.token.forEach((t) => {
+			if (stamp.isAfter(t.ts)) this.token.delete(t);
+			else r += t.serialize(qzconv);
 		});
 		return r;
 	}
-	retoken(player:Player,tickObj:string="",stamp:Stamp=new Stamp(60)){
-		this.token.add(player.token=new Token(player.name,player.tz,stamp,player.object,tickObj));
+	retoken(player: Player, tickObj: string = "", stamp: Stamp = new Stamp(60)) {
+		this.token.add(player.token = new Token(player.name, player.tz, stamp, player.object, tickObj));
 	}
-	detoken(player:Player){
-		if(player.token)this.token.delete(player.token);
-		player.token=null;
+	detoken(player: Player) {
+		if (player.token) this.token.delete(player.token);
+		player.token = null;
 	}
 	private dynamic: Map<number, Inv> = new Map();
 	getInv(z: number): Inv {
@@ -200,7 +200,7 @@ class Tileset {
 		if (typeof d === "undefined") this.dynamic.set(z, d = new Inv());
 		return d;
 	}
-	getInvKeys(){return this.dynamic.keys}
+	getInvKeys() { return this.dynamic.keys }
 	constructor(private map: string, st: string = "") {
 		//parse st into this.st
 	}
@@ -331,7 +331,7 @@ class Server {
 				n: string,
 				p: "*",
 				c: string,
-				d: `${Sex}${Style}${Cloth}`|"",
+				d: `${Sex}${Style}${Cloth}` | "",
 				j: string,
 				k: ItemID,
 				m: string,
@@ -394,7 +394,7 @@ class Server {
 						// not allowed because form.s is not needed, anymore
 						break;
 					case "d":
-						allowed=decoded.match(/^[MF][0-9][A-Za-z0-9]$/)?true:false;
+						allowed = decoded.match(/^[MF][0-9][A-Za-z0-9]$/) ? true : false;
 						break;
 					case "j":
 					case "m":
@@ -463,8 +463,8 @@ class Server {
 				print += "pop=Reset\n";
 			},
 			"char": function () {
-				if(form.d){
-					player.object = form.d + (player.object.substring(3)||"R");
+				if (form.d) {
+					player.object = form.d + (player.object.substring(3) || "R");
 					token();
 					xf.refresh();
 					print += "hpop=\n";
@@ -1146,18 +1146,18 @@ class Server {
 			print += "RStatic=1\n";
 			function items(map: WorldCoord, q: 0 | 1 | 2 | 3 | 4 = 0) {
 				let j = q - 1,
-					tileset=world.loadmap(map),
-					zlist=tileset.getInvKeys(),
-					inv:Inv,
+					tileset = world.loadmap(map),
+					zlist = tileset.getInvKeys(),
+					inv: Inv,
 					it = ["", "", "", ""];
 				//if (window.console) console.log("items", map, q)
 				//tokens 0=t (tile) 1=mapdynamic[map][i][t] (expiration) 2=i (tz)
-				for (let zi=0;zi<zlist.length;zi++)if ((inv=tileset.getInv(i=zlist[zi])) instanceof Inv){
-					inv.expiration(cstamp,(item:Item)=>{
-						let xform:[ItemID,number,RegExp|null]=["Za",Infinity,null];
+				for (let zi = 0; zi < zlist.length; zi++)if ((inv = tileset.getInv(i = zlist[zi])) instanceof Inv) {
+					inv.expiration(cstamp, (item: Item) => {
+						let xform: [ItemID, number, RegExp | null] = ["Za", Infinity, null];
 						({ //g-[A-Z][a-z].pl
 							Dh: function () {
-								if (Math.random() < .65) xform=["Ia", 60, /^[FG]/];
+								if (Math.random() < .65) xform = ["Ia", 60, /^[FG]/];
 							},
 							Ia: function () {
 								let y = Math.floor(i / MapWide),
@@ -1168,33 +1168,33 @@ class Server {
 								if (Math.random() < .25) m[m.length] = tileup();
 								if (Math.random() < .25) m[m.length] = tiledown();
 								for (let j = 0; j < m.length; j++) {
-									if (world.loadmap(m[j].map).getInv(m[j].z).getLength()<1) savedynamic(m[j].map, ("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, m[j].z);
+									if (world.loadmap(m[j].map).getInv(m[j].z).getLength() < 1) savedynamic(m[j].map, ("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, m[j].z);
 								}
-								if (Math.random() < .5) xform=["Ia", 60,null];
-								else if (Math.random() < .5) xform=[("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60,null];
+								if (Math.random() < .5) xform = ["Ia", 60, null];
+								else if (Math.random() < .5) xform = [("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, null];
 							},
 							Fa: function () {
-								if (Math.random() < .45) xform=["Ia", 60, /^[FG]/];
+								if (Math.random() < .45) xform = ["Ia", 60, /^[FG]/];
 							},
 							Fb: function () {
-								if (Math.random() < .5) xform=["Ia", 60, /^[FG]/];
+								if (Math.random() < .5) xform = ["Ia", 60, /^[FG]/];
 							},
 							Fc: function () {
-								if (Math.random() < .55) xform=["Ia", 60, /^[FG]/];
+								if (Math.random() < .55) xform = ["Ia", 60, /^[FG]/];
 							},
 							Fd: function () {
-								if (Math.random() < .6) xform=["Ia", 60, /^[FG]/];
+								if (Math.random() < .6) xform = ["Ia", 60, /^[FG]/];
 							}
 						}[item.id] || nop)();
 						if (xform[2] instanceof RegExp && !world.loadmap(map).getTile(i).match(xform[2])) return Item.Za;
-						return new Item(xform[0],new Stamp(xform[1],cstamp));
+						return new Item(xform[0], new Stamp(xform[1], cstamp));
 					});
-					if(!q){
-						let z=zconv(i);
-						j=z[0];
-						i=z[1];
+					if (!q) {
+						let z = zconv(i);
+						j = z[0];
+						i = z[1];
 					}
-					for(let item:Item,slot=0;slot<NumInven;slot++)if((item=inv.getSlotItem(slot)).id!=="Za")it[j] += item.id + Server.percent0_x(2, i);
+					for (let item: Item, slot = 0; slot < NumInven; slot++)if ((item = inv.getSlotItem(slot)).id !== "Za") it[j] += item.id + Server.percent0_x(2, i);
 				}
 				for (i = 0; i < 4; i++)if (it[i] || !q) print += "i" + i + "=" + it[i] + "\n";
 			}
@@ -1253,7 +1253,7 @@ class Server {
 			detoken();
 			player.tmap = map;
 			player.tz = z;
-			world.loadmap(map).retoken(player,TickObj)
+			world.loadmap(map).retoken(player, TickObj)
 			if (window.console) console.log(cstamp, "token.out", player.token);
 			return { a1: a1, b1: b1, a2: a2, b2: b2 };
 		}
