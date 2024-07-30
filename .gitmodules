@@ -1,0 +1,4 @@
+[submodule "11-gfx"]
+	path = 11-gfx
+	url = git@github.com:Quasic/11-gfx.git
+	branch = 11-gfx

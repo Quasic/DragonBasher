@@ -36,11 +36,11 @@ ServerPath="/cgi-bin/11-dragon/";
 Server="."+ServerPath+"11-dragon.cgi";
 ServerName="11-dragon";
 
-DirBuild="../11-gfx/b";
-DirChar="../11-gfx/c";
-DirItem="../11-gfx/i";
-DirKeys="../11-gfx/k";
-DirTile="../11-gfx/t";
+DirBuild="11-gfx/b";
+DirChar="11-gfx/c";
+DirItem="11-gfx/i";
+DirKeys="11-gfx/k";
+DirTile="11-gfx/t";
 MapSizeX=13;
 MapSizeY=7;
 
@@ -78,8 +78,8 @@ TopXPos=2; // X position of map in px
 TopYPos=2; // Y position of map in px
 
 </script>
-<script src="../11-gfx/client-itemid.js" language="JavaScript"></script>
-<script src="../11-gfx/client-startscreen.js" language="JavaScript"></script>
+<script src="11-gfx/client-itemid.js" language="JavaScript"></script>
+<script src="11-gfx/client-startscreen.js" language="JavaScript"></script>
 <style>
 body { margin: 0px 0px 0px 0px; background-color:#006000;color:navy }
 #PopUp {
@@ -98,9 +98,9 @@ a:active{color:red}
 </style>
 </head>
 <body bgcolor=006000 text=navy link=navy vlink=navy alink=red ondragstart="return false" onselectstart="return false">
-<div background="../11-gfx/POPUP4.png" id="PopUp" style="background-image:url(../11-gfx/POPUP4.png)" onMouseOver='PopUpVis="visible";AStamp();' onMouseOut='PopUpVis=PopForce; Keyboard=""; PUV=setTimeout("document.getElementById(\"PopUp\").style.visibility=PopUpVis;AStamp();",100);'>&nbsp;</div>
+<div background="11-gfx/POPUP4.png" id="PopUp" style="background-image:url(11-gfx/POPUP4.png)" onMouseOver='PopUpVis="visible";AStamp();' onMouseOut='PopUpVis=PopForce; Keyboard=""; PUV=setTimeout("document.getElementById(\"PopUp\").style.visibility=PopUpVis;AStamp();",100);'>&nbsp;</div>
 <div id="fg">&nbsp;</div>
-<img id=MH name=MH src="../11-gfx/Cursor.gif">
+<img id=MH name=MH src="11-gfx/Cursor.gif">
 <noscript><font color="white" style="color:white;background-color:black">Please allow this site to use JavaScript so you can play this game. (This setting is usually in your browser preferences.)</font></noscript>
 <script language="JavaScript">
 
@@ -1337,7 +1337,7 @@ slashcmd.help=function(h){var a,c=h,e;showtab.tmp=0;
 	clog('<font style="color:green">'+e+(a.length?"<br>Also called: "+a.join(', '):'')+'</font>',Chatting.log);
 };
 slashcmd.key={
-	tile:"Change map tile<br>Syntax: /tile <i>tilecode</i><br>The tilecode is a capital letter followed by a digit from 0-9 or a lowercase letter. Tilecodes can be found in the <a target=_BLANK href=\"../11-gfx/11-viewer.htm?T=T&S=A&E=Z\">Graphics Viewer</a>.",
+	tile:"Change map tile<br>Syntax: /tile <i>tilecode</i><br>The tilecode is a capital letter followed by a digit from 0-9 or a lowercase letter. Tilecodes can be found in the <a target=_BLANK href=\"11-gfx/11-viewer.htm?T=T&S=A&E=Z\">Graphics Viewer</a>.",
 	inventory:"Add item to blank space in inventory<br>Syntax: /inventory [<i>slot#</i>] <a href=javascript:slashcmd.help('itemid')>itemid</a> [<i>seconds</i>]<br>Only itemid is required",
 	add:"Add static item<br>Syntax: /add <a href=javascript:slashcmd.help('itemid')>itemid</a> <i>new item lifetime</i><br>Building: /add <a href=javascript:slashcmd.help('BUILDID')>BUILDID</a><br>NPC: /add <i>NPCName</i> <i>appearance</i><br>See also <a href=javascript:slashcmd.help('delete')>/help delete</a>",
 	tele:"Teleport<br>Syntax: /tele <i>screenid</i>-<i>z</i>",
@@ -1354,7 +1354,7 @@ slashcmd.man={
 	static:"Interact with static item<br>Syntax: /static <i>{<a href=javascript:slashcmd.help('itemid')>itemid</a>|<a href=javascript:slashcmd.help('BUILDID')>BUILDID</a>|NPC code}</i><br><a href=javascript:slashcmd.help('itemid')>itemid</a> and <a href=javascript:slashcmd.help('itemid')>itemid</a> help can be found by entering '<a href=javascript:slashcmd.help('itemid')>/help itemid</a>' or '<a href=javascript:slashcmd.help('BUILDID')>/help BUILDID</a>'<br>NPC code help not yet provided. Use the context menus, instead.",
 	wear:"Wears an item<br>Syntax: /wear <a href=javascript:slashcmd.help('itemid')>itemid</a><br>The item must be in your inventory.<br>'<a href=javascript:slashcmd.help('itemid')>itemid</a>' help can be found by entering '<a href=javascript:slashcmd.help('itemid')>/help itemid</a>'<br>See also <a href=javascript:slashcmd.help('remove')>/help remove</a>",
 	'^':'Chat Image<br>Syntax:<br>Item: ^<a href=javascript:slashcmd.help("itemid")>itemid</a><br>Building: ^<a href=javascript:slashcmd.help("BUILDID")>BUILDID</a><br>This lets you place the image in chat, or preview it when using many of these commands.',
-	itemid:"Every item has an id.<br>Syntax: {Uppercase letter}{lowercase letter}<br>In chat, you can optionally precede an item id with the <a href=javascript:slashcmd.help('^')>^ symbol</a> to show the item's picture. This can be used in most commands, as well, to make sure the id is correct. If not, simply backspace. You can find item ids listed in the <a target=_BLANK href=\"../11-gfx/11-viewer.htm?T=I&S=A&E=Z\">Graphics Viewer</a>.",
+	itemid:"Every item has an id.<br>Syntax: {Uppercase letter}{lowercase letter}<br>In chat, you can optionally precede an item id with the <a href=javascript:slashcmd.help('^')>^ symbol</a> to show the item's picture. This can be used in most commands, as well, to make sure the id is correct. If not, simply backspace. You can find item ids listed in the <a target=_BLANK href=\"11-gfx/11-viewer.htm?T=I&S=A&E=Z\">Graphics Viewer</a>.",
 	BUILDID:"Every building has an id<br>Syntax: UPPERCASENAME<br>In chat, you can optionally precede a building id with the <a href=javascript:slashcmd.help('^')>^ symbol</a> to show the building's picture. This can be used in most commands, as well, to make sure the id is correct. If not, simply backspace."
 };
 slashcmd.short={"?":"help",a:"add",d:"delete",del:"delete",i:"inventory",item:"inventory",newitem:"inventory",teleport:"tele",t:"tele"};
@@ -1432,7 +1432,7 @@ showtab.main=$('<DIV id=CHAT />').css({visibility:"hidden",position:"absolute",b
 <div id="BALLOONLOG" class="left0 top1 right0" style="bottom:50%;overflow:auto">List of things characters have said using these balloons</div>
 <div id="BALLOONS" class="left0 bottom0 right0" style="top:50%;overflow:auto;border-top:1px dotted green">List of things player can say above head</div>
 */
-.append(showtab.scrollup=$('<img id="SCROLLUP" src="../11-gfx/CHATUP.gif">').css(pane).css({height:line,width:line,top:a[1],right:a[0],cursor:"n-resize"}).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()-showtab.scrollup.height());ScrollbarUpdate();}}))
+.append(showtab.scrollup=$('<img id="SCROLLUP" src="11-gfx/CHATUP.gif">').css(pane).css({height:line,width:line,top:a[1],right:a[0],cursor:"n-resize"}).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()-showtab.scrollup.height());ScrollbarUpdate();}}))
 .append(
 	showtab.scrollbar=$('<div id="SCROLLBAR" />')
 	.css(pane).css({cursor:"ns-resize",width:line,top:a[2],right:a[0],bottom:a[2]})
@@ -1442,8 +1442,8 @@ showtab.main=$('<DIV id=CHAT />').css({visibility:"hidden",position:"absolute",b
 		.on("mousedown",function(E){var b=showtab.scrollbox,min=0,max=$(b[0].parentNode).height()-b.height()/*-end*/,d=Chatting.log;return d?Drag(E,0,b.position().top,function(x,y){b[0].style.top=y+"px";d.scrollTop((d.prop("scrollHeight")-d.height())*(y-min)/(max-min));},0,min,0,max,1,1):false;})
 	).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()+Math.max(1,Chatting.log.height()-showtab.scrollup.height())*(e.pageY<showtab.scrollbox.offset().top?-1:1));ScrollbarUpdate();}})
 )
-.append(showtab.scrolldn=$('<img id="SCROLLDN" src="../11-gfx/CHATDOWN.gif">').css(pane).css({height:line,width:line,right:a[0],bottom:a[1],cursor:"s-resize"}).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()+showtab.scrolldn.height());ScrollbarUpdate();}}))
-.append($('<img id="RESIZEBOX" src="../11-gfx/t/If.png">').css(pane).css({height:line,width:line,bottom:a[0],right:a[0],cursor:"nwse-resize"}).on("mousedown",{w:1,h:1},ChatResize))
+.append(showtab.scrolldn=$('<img id="SCROLLDN" src="11-gfx/CHATDOWN.gif">').css(pane).css({height:line,width:line,right:a[0],bottom:a[1],cursor:"s-resize"}).on("mousedown",function(e){if(Chatting&&Chatting.log){Chatting.log.scrollTop(Chatting.log.scrollTop()+showtab.scrolldn.height());ScrollbarUpdate();}}))
+.append($('<img id="RESIZEBOX" src="11-gfx/t/If.png">').css(pane).css({height:line,width:line,bottom:a[0],right:a[0],cursor:"nwse-resize"}).on("mousedown",{w:1,h:1},ChatResize))
 .append(showtab.chatinput=$('<div id="CHATINPUT" />').css(pane).css({height:line,left:a[0],bottom:a[0],right:a[1]}))
 .width(Cookie.get("chatwidth")||Math.round(Map2X*2*.8))
 .height(Cookie.get("chatheight")||Math.round(Map2Y*2*.6))
@@ -1844,7 +1844,7 @@ function AdminTileMode(i) {
 
 
 </script>
-<!--script src="../11-gfx/client-chat.js" language="JavaScript"></script>
-<script src="../11-gfx/client-view.js" language="JavaScript"></script-->
+<!--script src="11-gfx/client-chat.js" language="JavaScript"></script>
+<script src="11-gfx/client-view.js" language="JavaScript"></script-->
 </body>
 </html>
