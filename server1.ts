@@ -30,7 +30,7 @@ type WorldCoord = `${UpperLetter}${Digit | LowerLetter}`;
 type MoveData = { map: WorldCoord, x: number, y: number, z: number, a1: UpperLetter, b1: Digit, a2: UpperLetter, b2: Digit }; // Note: LowerLetter may show up in Digit place if not scrolling
 type Tile = `${UpperLetter}${LowerLetter}`;
 type TileFunction = () => Tile;
-type ItemID = `${UpperLetter}${LowerLetter}`;
+type ItemID = `${UpperLetter}${LowerLetter}`; // In some places, the second character can also be Digit, but not everywhere.
 type Sex="M"|"F"; // |"n";
 type Style=Digit;
 type Cloth=UpperLetter|LowerLetter|Digit;
@@ -472,7 +472,7 @@ class Server {
 			},
 			tele: function () {
 				print += "pop=tele\n";
-				var mapz = form.j.split("-");
+				let mapz = form.j.split("-");
 				if (mapz[0].match(/^[A-Z][0-9a-z]$/)) {
 					if (mapz.length < 2 || +mapz[1] < 1) mapz[1] = "" + (player.tz || 88);
 					player.map = mapz[0] as WorldCoord;
@@ -484,7 +484,7 @@ class Server {
 				} else print += "pop=bad map code:" + mapz[0] + "\n";
 			},
 			left: function () {
-				var t = tileleft();
+				let t = tileleft();
 				if (t.map != player.map) {
 					player.map = t.map;
 					print += "t4=" + world.loadmap(`${t.a1}${t.b1}`) + "\nt5=" + world.loadmap(`${t.a2}${t.b2}`) + "\nscroll=left\n";
@@ -498,7 +498,7 @@ class Server {
 				return !t.a1;
 			},
 			right: function () {
-				var t = tileright();
+				let t = tileright();
 				if (t.map != player.map) {
 					player.map = t.map;
 					print += "t4=" + world.loadmap(`${t.a1}${t.b1}`) + "\nt5=" + world.loadmap(`${t.a2}${t.b2}`) + "\nscroll=right\n";
@@ -512,7 +512,7 @@ class Server {
 				return !t.a1;
 			},
 			up: function () {
-				var t = tileup();
+				let t = tileup();
 				if (t.map != player.map) {
 					print += "t4=" + world.loadmap(player.map = t.map) + "\nt5=" + world.loadmap(`${t.a2}${t.b2}`) + "\nscroll=up\n";
 				}
@@ -524,7 +524,7 @@ class Server {
 				return !t.a1;
 			},
 			down: function () {
-				var t = tiledown();
+				let t = tiledown();
 				if (t.map != player.map) {
 					player.map = t.map;
 					print += "t4=" + world.loadmap(`${t.a2}${t.b1}`) + "\nt5=" + world.loadmap(`${t.a2}${t.b2}`) + "\nscroll=down\n";
@@ -537,7 +537,7 @@ class Server {
 				return !t.a1;
 			},
 			cook: function () {
-				var odds: [number, ItemID] = [0, "Za"],
+				let odds: [number, ItemID] = [0, "Za"],
 					slotitem = form.j.split("-"),
 					slot = +slotitem[0];
 				if (!hasFire()) return print += "pop=Need Fire!\n";
@@ -562,7 +562,7 @@ class Server {
 				}
 			},
 			eat: function () {
-				var food,
+				let food,
 					slotitem = form.j.split("-"),
 					slot = +slotitem[0];
 				if (slot < NumInven && slotitem[1].length === 2) {
@@ -624,7 +624,7 @@ class Server {
 					else return;
 					inv();
 					print += "dinv=1\n";
-					savedynamic(player.tmap, "Zj", Server.percent0_x(8, cstamp.after(60)), player.tz);
+					savedynamic(player.tmap, "Zj", cstamp.after(60), player.tz);
 				}
 			},
 			wear: function () {
@@ -632,7 +632,7 @@ class Server {
 				var Wearing = player.object.substr(4),
 					Class = form.j.charAt(0).replace(/[^A-Z]/g, ""),
 					type = form.j.charAt(1).replace(/[^0-9a-z]/g, "");
-				if (player.inven.indexOf(Class + type) >= 0) {
+				if (player.inven.indexOf(`${Class}${type}`) >= 0) {
 					if ("" !== type) {
 						if ("LMS".indexOf(Class) >= 0) {
 							Wearing.replace(/[LMS]./g, "");
@@ -718,7 +718,9 @@ class Server {
 											Ga: { odds: 10, tool: "Bj", bait: "", baitlossodds: 0 },
 											Gd: { odds: 10, tool: "Bj", bait: "GaGd", baitlossodds: 10 },
 											Ge: { odds: 10, tool: "Bk", bait: "GaGd", baitlossodds: 10 }
-										} as { [k: ItemID]: { odds: number, tool: ItemID, bait: string, baitlossodds: number } })[codetsz[3]],
+										} as {
+											[K in ItemID]: { odds: number; tool: ItemID; bait: string; baitlossodds: number; };
+										})[codetsz[3]],
 											k = player.inven.indexOf(form.k),
 											f = player.inven.indexOf("Za");
 										if (!o) return print += "pop=No Fish to catch!\n";
