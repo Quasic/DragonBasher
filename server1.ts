@@ -154,14 +154,18 @@ class Player {
 	h: number = 60;
 	tmap: WorldCoord;
 	tz: number;
-	token;
+	token:Token|null=null;
 	ts: Stamp = new Stamp(0, 0);
 	tport1: string = "";
-	//const level:3=3 unused
 }
 
 class Token {
-	//
+	level:3=3; // unused, inherited from Queville
+	constructor(public name:string,public z:number,public ts:Stamp=new Stamp(60),public object:string="new",public TickObj:string=""){}
+	serialize(qzconv:(z:number)=>[1 | 2 | 3 | 4, number]):string{
+		return "p=" + this.name + " " + this.level + " " + this.object+ "-" + this.TickObj + " " + qzconv(this.z).join("-") + "\n";
+	}
+	// unserialize is only needed in client, since these are volitile by nature
 }
 
 class Static {
@@ -171,6 +175,22 @@ class Tileset {
 	private ts: Stamp = new Stamp();
 	getStamp(): Stamp { return this.ts }
 	private st: Static[] = [];
+	private token: Set<Token>=new Set();
+	serializeTokens(qzconv:1|2|3|4|((z:number)=>[1 | 2 | 3 | 4, number]),stamp:Stamp=new Stamp()){
+		let r="";
+		this.token.forEach((t)=>{
+			if(stamp.isAfter(t.ts))this.token.delete(t);
+			else r+=t.serialize(qzconv);
+		});
+		return r;
+	}
+	retoken(player:Player,tickObj:string="",stamp:Stamp=new Stamp(60)){
+		this.token.add(player.token=new Token(player.name,player.tz,stamp,player.object,tickObj));
+	}
+	detoken(player:Player){
+		if(player.token)this.token.delete(player.token);
+		player.token=null;
+	}
 	private dynamic: Map<number, Inv> = new Map();
 	getInv(z: number): Inv {
 		let d = this.dynamic.get(z);
@@ -238,7 +258,6 @@ class Tileset {
 		for (let i = 0; i < MapSizeX1 * MapSizeY1 * 4; i++)tileset += tiles[Math.floor(Math.random() * total)] || bg;//Ua for water
 		return tileset;
 	}
-	//maptoken={},mapdynamic={}
 }
 
 class World {
@@ -431,7 +450,6 @@ class Server {
 			},
 			logout: function () {
 				detoken();
-				player.token = false;
 				print += "logout=\n";
 			},
 			reset: function () {
@@ -1094,7 +1112,7 @@ class Server {
 				i, s, t: Tileset = world.loadmap(player.tmap), z;
 			if (a1 < 'A' || a1 > world.EdgeY || b1 < '0' || (b1 > world.EdgeX && b1 < 'a')) print += "pop=Invalid map " + map + "\n";
 			else if (world.isCity(map)) {//city has 4 maps in one
-				players(map);
+				t.serializeTokens(zconv,cstamp);
 				statics(map);
 				items(map);
 				if (player.ts.since(t.getStamp()) !== 0) {
@@ -1111,7 +1129,7 @@ class Server {
 				let map: [WorldCoord, WorldCoord, WorldCoord, WorldCoord] = [`${a1}${b1}`, `${a1}${b2}`, `${a2}${b1}`, `${a2}${b2}`];
 				for (i = 0; i < 4; i = s) {
 					s = i + 1;
-					players(map[i], s);
+					t.serializeTokens((n:number)=>[s,n],cstamp);
 					items(map[i], s);
 					statics(map[i], s);
 				}
@@ -1123,18 +1141,6 @@ class Server {
 				}
 			}
 			print += "RStatic=1\n";
-			function players(map: WorldCoord, q?: number) {
-				var i, t;
-				if ("object" === typeof maptoken[map]) for (i in maptoken[map]) if (!maptoken[map].hasOwnProperty || maptoken[map].hasOwnProperty(i)) {
-					t = i.split(" ");
-					if (cstamp > t[4]) {
-						//expired token
-						maptoken[map][i] = undefined;
-						delete maptoken[map][i];
-					} else print += "p=" + t[0] + " " + t[1] + " " + t[2] + " " + (q ? q + "-" + t[3] : zconv(t[3]).join("-")) + "\n";
-					if (window.console) console.log(cstamp, "players", map, q, t);
-				}
-			}
 			function items(map: WorldCoord, q: 0 | 1 | 2 | 3 | 4 = 0) {
 				let j = q - 1,
 					tileset=world.loadmap(map),
@@ -1244,16 +1250,12 @@ class Server {
 			detoken();
 			player.tmap = map;
 			player.tz = z;
-			if (!maptoken[player.tmap]) maptoken[player.tmap] = {};
-			maptoken[player.tmap][player.token = player.name + " 3 " + player.object + "-" + TickObj + " " + z + " " + (cstamp.after(60))] = 1;
+			world.loadmap(map).retoken(player,TickObj)
 			if (window.console) console.log(cstamp, "token.out", player.token);
 			return { a1: a1, b1: b1, a2: a2, b2: b2 };
 		}
 		function detoken() {
-			if (player.token && maptoken[player.tmap]) {
-				maptoken[player.tmap][player.token] = undefined;
-				delete maptoken[player.tmap][player.token];
-			}
+			world.loadmap(player.tmap).detoken(player);
 		}
 		function inv() {
 			print += "inv=" + player.inven.serializeItemIDs(NumInven) + "\n";
