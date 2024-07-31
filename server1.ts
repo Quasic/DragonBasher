@@ -34,6 +34,15 @@ type ItemID = `${UpperLetter}${LowerLetter}`; // In some places, the second char
 type Sex = "M" | "F"; // |"n";
 type Style = Digit;
 type Cloth = UpperLetter | LowerLetter | Digit;
+type Form = {
+	n: string,
+	c: string,
+	d: `${Sex}${Style}${Cloth}` | "",
+	j: string,
+	k: ItemID,
+	m: string,
+	q: string
+};
 
 class Stamp {
 	private stamp: number;
@@ -172,13 +181,224 @@ class Token {
 	// unserialize is only needed in client, since these are volitile by nature
 }
 
-class Static {
+abstract class Static {
+	constructor(public readonly code: string, protected z: number) { }
+	isAt(z: number): boolean { return this.z === z }
+	abstract activate(player: Player, form: Form, cstamp: Stamp, world: World, tport: (map: WorldCoord, z: number) => void): string; // matches /(^|\n)dinv=1/ if inv needs calling before adding this to print
+	getZ() { return this.z }
+	getCodeZ(): [string, number] { return [this.code, this.z] }
+	abstract serialize(): string;
+	static unserialize(s: string): Static {
+		if (s.match(/^[A-Z][a-z0-9] /)) return "Z" === s.charAt(0) ? SpecialItem.unserialize(s) : ItemGenerator.unserialize(s);
+		if (s.substring(0, 3) === "NPC") return NPC.unserialize(s);
+		switch (s.substring(0, s.indexOf(" "))) {
+			//case "TPORT": return TPORT.unserialize(s);
+		}
+		return NullStatic.unserialize(s);
+	}
 }
+class ItemGenerator extends Static {
+	constructor(item: ItemID, z: number, private lifetime: number = 60) { super(item, z) }
+	serialize(): string { return this.code + " " + this.lifetime + " " + this.z }
+	static unserialize(s: string) {
+		let a = s.split(" ");
+		return new ItemGenerator(a[0] as ItemID, +a[2], +a[1]);
+	}
+	activate(player: Player, form: Form, cstamp: Stamp = new Stamp()): string {
+		player.inven.add(new Item(this.code as ItemID, new Stamp(this.lifetime, cstamp)));
+		return "dinv=1v\n";
+	}
+}
+abstract class SpecialItem extends Static {
+	constructor(item: `Z${LowerLetter}`, z: number) { super(item, z) }
+	serialize(): string {
+		return this.code + " 1 " + this.z;
+	}
+	static unserialize(s: string) {
+		switch (s.substring(0, 2)) {
+			case "Zf": return Sign.unserialize(s);
+			case "Zg": return Dock.unserialize(s);
+			case "Zh": return City.unserialize(s);
+			default: return NullStatic.unserialize(s);
+		}
+		assertUnreachable();
+	}
+}
+class NullStatic extends SpecialItem {
+	private constructor(z: number) { super("Za", z) }
+	serialize() { return "Za 0 " + this.z }
+	static unserialize(s: string): SpecialItem {
+		//not normal, but sanitizes corruption
+		let a = s.split(" ");
+		return new NullStatic(+a[2]);
+	}
+	activate(): string { return "pop=invalid static object\n"; }
+}
+class Sign extends SpecialItem {
+	constructor(z: number, public text: string) { super("Zf", z) }
+	serialize(): string {
+		return "Zf 1 " + this.z + " " + this.text.replace(/\*/, "[asterisk]")
+	}
+	static unserialize(s: string): SpecialItem {
+		let m = s.match(/^Zf [0-9]+ () (.*)$/);
+		if (m) return new Sign(+m[1], m[2]);
+		return NullStatic.unserialize(s);
+	}
+	activate(player: Player): string {
+		return "pop=" + this.text + "\n";
+	}
+}
+class Dock extends SpecialItem {
+	constructor(z: number, private fish: `G${LowerLetter}`) { super("Zg", z) }
+	serialize(): string {
+		return this.code + " 1 " + this.z + " " + this.fish;
+	}
+	static unserialize(s: string): SpecialItem {
+		let a = s.split(" ");
+		if ("Zg" === a[0] && "G" === a[3].charAt(0) && a[3].charAt(1) === a[3].charAt(1).toLowerCase()) return new Dock(+a[2], a[3] as `G${LowerLetter}`);
+		return NullStatic.unserialize(s);
+	}
+	activate(player: Player, form: Form, cstamp: Stamp): string {
+		if (form.k.charAt(0).toUpperCase() + form.k.charAt(1).toLowerCase() != form.k) return "pop=Bad Bait!\n";
+		let print = "",
+			o = ({
+				Ga: { odds: 10, tool: "Bj", bait: "", baitlossodds: 0 },
+				Gd: { odds: 10, tool: "Bj", bait: "GaGd", baitlossodds: 10 },
+				Ge: { odds: 10, tool: "Bk", bait: "GaGd", baitlossodds: 10 }
+			} as {
+					[K in ItemID]: { odds: number; tool: ItemID; bait: string; baitlossodds: number; };
+				})[this.fish],
+			k = player.inven.indexOf(form.k),
+			f = player.inven.indexOf("Za");
+		if (!o) return print + "pop=No Fish to catch!\n";
+		if (f < 0) return print + "pop=Full Inventory\n"; //could lose bait if inv is full and a fish is caught, by removing this line, but a warning is generally preferable
+		if (player.inven.indexOf(o.tool) >= 0) {
+			if (o.bait) {
+				if (k < 0 || o.bait.indexOf(form.k) < 0) return print + "pop=Need Bait\n";
+				if (Math.floor(Math.random() * 100) < o.baitlossodds) {
+					player.inven.rm(form.k, k);
+					if (f < 0) f = k;
+					k = - 1;
+					print += "dinv=1v\npop=Lost Bait!\n";
+				}
+			}
+			if (o.odds) {
+				//catch fish
+				if (Math.floor(Math.random() * 100) < o.odds) {
+					if (f < 0) {
+						if (k < 0) return print + "pop=Full Inventory\n";
+						f = k;
+						print += "pop=Lost Bait!\n";
+					}
+					player.inven.add(new Item(this.fish, new Stamp(Item.lifetime(this.fish), cstamp)), f);
+					print += "dinv=1v\npop=You catch a Fish!\n";
+				} else print += "pop=Nothing\n";
+			}
+		} else print += "pop=Need " + ({ Bj: "Net", Bk: "Pole" }[o.tool]) + "\n";
+		return print;
+	}
+}
+class City extends SpecialItem {
+	constructor(z: number, private map: WorldCoord, private mapz: number) {
+		super("Zh", z)
+	}
+	activate(player: Player, form: Form, cstamp: Stamp, world: World, tport): string {
+		if (!world.isCity(this.map)) return "pop=Not a City!";
+		tport(this.map, this.mapz);
+		return "pop=Enter City\n";
+	}
+	serialize(): string {
+		return "Zh 1 " + this.z + " " + this.map + " " + this.mapz;
+	}
+	static unserialize(s: string) {
+		let a = s.split(" ");
+		if ("Zh" === a[0] && a[3].match(/^[A-Z][0-9a-z]$/)) return new City(+a[2], a[3] as WorldCoord, +a[4]);
+		return NullStatic.unserialize(s);
+	}
+}
+/*More subclasses of SpecialItem to create and add to SpecialItem.unserialize switch
+									Zi: function () {
+										var f = player.inven.indexOf("Cg")
+										if (f >= 0) {
+											player.inven = player.inven.substring(0, f) + "Zj" + Server.percent0_x(8, cstamp.after(60)) + player.inven.substr(f + 10);
+											inv();
+											print += "dinv=1v\n";
+										}
+									},
+									Zj: function () {
+										print += "pop=Fire\n";
+									}
+ */
+class NPC extends Static {
+	constructor(public name: string, z: number) { super("NPC" + name, z) }
+	serialize(): string {
+		return this.code + " 1 " + this.z;
+	}
+	static unserialize(s: string): Static {
+		if (s.substring(0, 3) !== "NPC") return NullStatic.unserialize(s);
+		let a = s.split(" ");
+		return new NPC(a[0].substring(3), +a[2]);
+	}
+	activate(player: Player, form: Form, cstamp: Stamp, world: World): string {
+		return "pop=" + this.name + " says Hi!\n";
+	}
+}
+/* Building subclasses of Static to create and add to Static.unserialize switch
+									TPORT: function () {
+										print += "pop=tport\n";
+										var mapz;
+										if (codetsz[3] && (mapz = codetsz[3].split("-")).length > 1) {
+											player.map = mapz[0];
+											player.z = mapz[1];
+											var ab = token();
+											print += "t0=" + world.loadmap(`${ab.a1}${ab.b1}`) + "\nt1=" + world.loadmap(`${ab.a1}${ab.b2}`) + "\nt2=" + world.loadmap(`${ab.a2}${ab.b1}`) + "\nt3=" + world.loadmap(`${ab.a2}${ab.b2}`) + "\nRMap=1\n";
+										} else if (player.name == codetsz[3]) {
+											if (player.tport1) {
+												print += "pop=linking this teleport to that teleport...\n";
+												var dest = player.tport1.split("-");
+												Cookie.set("st" + player.tmap, loadstatics(player.tmap) + "*TPORT 00000000 " + dest[1] + " " + player.tport1);
+												print += "pop=linking that teleport to this teleport...\n";
+												Cookie.set("st" + dest[0], loadstatics(dest[0]) + "*TPORT 00000000 " + dest[1] + " " + player.map + "-" + player.z);
+												player.tport1 = "";
+												print += "pop=teleport completed.\n";
+											} else {
+												player.tport1 = player.map + "-" + player.z;
+												print += "pop=add another teleport for destination\n";
+											}
+										} else {
+											print += "pop=player name does not matches\n";
+										}
+									},
+									WELL: function () {
+										let t = player.inven.indexOf("Bd");
+										if (t > -1) {
+											player.inven.chg("Bd", "Ei", t);
+											inv();
+											print += "dinv=1v\n";
+										}
+									},
+									FOUNTAIN: function () {
+										let t = player.inven.indexOf("Bd");
+										if (t > -1) {
+											player.inven.chg("Bd", "Ei", t);
+											inv();
+											print += "dinv=1v\n";
+										}
+									},
+									FARMHOUSE: function () {
+										let slot = player.inven.indexOf("Za");
+										if (player.inven.serializeItemIDs().match(/F[abcd]/) && slot > -1) {
+											player.inven.add(new Item("Fd", new Stamp(3600, cstamp)), slot);
+											inv();
+											print += "dinv=1v\n";
+										}
+									},
+									CLOTHES: function () { }//static-clothes.pl basically unimplemented
+ */
 
 class Tileset {
 	private ts: Stamp = new Stamp();
 	getStamp(): Stamp { return this.ts }
-	private st: Static[] = [];
 	private token: Set<Token> = new Set();
 	serializeTokens(qzconv: (z: number) => [1 | 2 | 3 | 4, number], stamp: Stamp = new Stamp()) {
 		let r = "";
@@ -195,15 +415,13 @@ class Tileset {
 		if (player.token) this.token.delete(player.token);
 		player.token = null;
 	}
-	private dynamic: Map<number, Inv> = new Map();
 	getInv(z: number): Inv {
 		let d = this.dynamic.get(z);
 		if (typeof d === "undefined") this.dynamic.set(z, d = new Inv());
 		return d;
 	}
 	getInvKeys() { return this.dynamic.keys }
-	constructor(private map: string, st: string = "") {
-		//parse st into this.st
+	constructor(private map: string = "", private st: Map<number, Static> = new Map(), private dynamic: Map<number, Inv> = new Map()) {
 	}
 	// q is only used for cities; it allows multiple maps in one
 	getTileClass(z: number, q: 0 | 1 | 2 | 3 = 0): UpperLetter { return this.map.split("*")[q].charAt(2 * z) as UpperLetter }
@@ -237,8 +455,61 @@ class Tileset {
 		} else this.map = map[0].substring(0, len);
 		// probably don't need to stamp this, unless a too-small value was used
 	}
-	toString() { return this.map }
-	serialize(): string { return this.map }
+	serializeStatics(): string {
+		let a: string[] = [];
+		this.st.forEach((s: Static) => { a.push(s.serialize()) });
+		return a.join("*");
+	}
+	static unserializeStatics(s: string): Map<number, Static> {
+		let a = s.split("*"), r: Map<number, Static> = new Map();
+		for (let i = 1; i < a.length; i++) {
+			let t = Static.unserialize(a[i]),
+				z = t.getZ();
+			if (z >= 0 && "Za" !== t.code) r.set(z, t);
+		}
+		return r;
+	}
+	serializeStaticZ(q: 0 | 1 | 2 | 3 | 4 = 0, zconv: (z: number) => [1 | 2 | 3 | 4, number]): string {
+		let s = ["", "", "", ""],
+			f = q ? (z: number) => ([q, z] as [1 | 2 | 3 | 4, number]) : zconv,
+			r = "";
+		this.st.forEach((s: Static, z: number) => {
+			let qz = f(z);
+			s[qz[0] - 1] += s.code + "=" + qz[1] + " ";
+		});
+		for (let i = 0; i < 4; i++)if (s[i].length || !q) r += "s" + i + "=" + s[i] + "\n";
+		return r;
+	}
+	addStatic(s: Static) { this.st.set(s.getZ(), s) }
+	getStaticAt(z: number) { return this.st.get(z) }
+	hasStaticAt(z: number) { return this.st.has(z) }
+	rmStatic(s: Static) { this.st.delete(s.getZ()) }
+	rmStaticAt(z: number) { this.st.delete(z) }
+	serializeDynamics(): string {
+		let r = "", t: Inv;
+		this.dynamic.forEach((inv: Inv, key: number) => { let v = inv.serialize(); r += key.toString(36).toLowerCase() + "!" + v.length.toString(36).toLowerCase() + v })
+		return r;
+	}
+	static unserializeDynamics(s: string): Map<number, Inv> {
+		let m: RegExpMatchArray | null,
+			r: Map<number, Inv> = new Map(),
+			x = /^([0-9a-z]+)!(0|([1-9a-z][0-9a-z]*[A-Z]))/;
+		while (m = s.match(x)) {
+			if ("0" !== m[2]) m[2] = m[2].substring(0, m[2].length - 1);
+			let z = parseInt(m[1], 36),
+				c = parseInt(m[2], 36);
+			s = s.substring(m[1].length + 1 + m[2].length);
+			r.set(z, Inv.unserialize(s.substring(0, c)));
+			s = s.substring(c);
+		}
+		return r;
+	}
+	serialize(): string { return this.map + "*" + this.serializeStatics() + "*" + this.serializeDynamics() }
+	static unserialize(s: string): Tileset {
+		let m = s.match(/^([^*]*)\*(.*)\*([^*]*)$/);
+		if (m) return new Tileset(m[1], Tileset.unserializeStatics(m[1]), Tileset.unserializeDynamics(m[3]));
+		return new Tileset();
+	}
 	serializeQuarters(): string {
 		let t = this.map.split("*");
 		if (t.length < 4) {
@@ -282,6 +553,22 @@ class World {
 	savemap(map: WorldCoord, tileset: Tileset) {
 		this.map.set(map, tileset);
 	}
+	serialize(): string {
+		let r = "";
+		this.map.forEach((t, k) => { let s = t.serialize(); r += k + s.length.toString(36).toLowerCase() + s });
+		return r;
+	}
+	static unserialize(s: string) {
+		let m: Map<WorldCoord, Tileset> = new Map(),
+			t: RegExpMatchArray | null;
+		while (t = s.match(/^([A-Z][0-9a-z])([0-9a-z]+)([A-Z]|$)/)) {
+			let p = 2 + m[2].length,
+				e = p + (parseInt(t[2], 36) || 0);
+			m.set(m[1], Tileset.unserialize(s.substring(p, e)))
+			s = s.substring(e);
+		}
+		return m;
+	}
 	static saveCookie(map: WorldCoord, tileset: Tileset) {
 		Cookie.set("map" + map, tileset.serialize());
 	}
@@ -295,7 +582,7 @@ class World {
 		for (let i = 97; i < 123; i++)o.add(String.fromCharCode(i) as LowerLetter);
 		for (let i = 65; i < 91; i++)for (let j in o.keys) {
 			map = String.fromCharCode(i) + j as WorldCoord;
-			t.set(map, new Tileset(Cookie.get("map" + map) || Tileset.randmap(), Cookie.get("st" + map) || ""));
+			t.set(map, new Tileset(Cookie.get("map" + map) || Tileset.randmap(), Tileset.unserializeStatics(Cookie.get("st" + map) || "")));
 		}
 		return new World("9", "Z", t);
 	}
@@ -328,18 +615,8 @@ class Server {
 			nop = () => { },
 			saveplayer = player !== this.player ? nop : () => Cookie.set("plyr" + this.player.name, this.player.one + this.player.object + (this.player.h > 99 ? "99" : (this.player.h < 10 ? "0" : "") + this.player.h) + this.player.z + this.player.map + this.player.tmap + this.player.inven.serialize(NumInven)),//._-*
 			//estamp=cstamp+60
-			form: {
-				n: string,
-				p: "*",
-				c: string,
-				d: `${Sex}${Style}${Cloth}` | "",
-				j: string,
-				k: ItemID,
-				m: string,
-				q: string
-			} = {
+			form: Form = {
 				n: "",
-				p: "*",
 				c: "",
 				d: "",
 				j: "",
@@ -698,168 +975,34 @@ class Server {
 				xf.refresh();
 			},
 			"static": function () {
-				let f: number,
-					s = loadstatics(player.tmap).split("*");
-				for (let codetsz: string[], i = 0; i < s.length; i++) {
-					codetsz = s[i].split(" ");
-					if (player.tz == +codetsz[2]) {
-						if (codetsz[0].length == 2) {
-							if (codetsz[0].charAt(0) == "Z") {
-								({ // static-
-									Zf: function () {
-										//sign
-										print += "pop=" + codetsz[3];
-										for (var i = 4; i < codetsz.length; i++)print += " " + codetsz[i];
-										print += "\n";
-									},
-									Zg: function () {
-										//fishing dock
-										if (form.k.charAt(0).toUpperCase() + form.k.charAt(1).toLowerCase() != form.k) return print += "pop=Bad Bait!\n";
-										var o = ({
-											Ga: { odds: 10, tool: "Bj", bait: "", baitlossodds: 0 },
-											Gd: { odds: 10, tool: "Bj", bait: "GaGd", baitlossodds: 10 },
-											Ge: { odds: 10, tool: "Bk", bait: "GaGd", baitlossodds: 10 }
-										} as {
-											[K in ItemID]: { odds: number; tool: ItemID; bait: string; baitlossodds: number; };
-										})[codetsz[3]],
-											k = player.inven.indexOf(form.k),
-											f = player.inven.indexOf("Za");
-										if (!o) return print += "pop=No Fish to catch!\n";
-										if (f < 0) return print += "pop=Full Inventory\n"; //could lose bait if inv is full and a fish is caught, by removing this line, but a warning is generally preferable
-										if (player.inven.indexOf(o.tool) >= 0) {
-											if (o.bait) {
-												if (k < 0 || o.bait.indexOf(form.k) < 0) return print += "pop=Need Bait\n";
-												if (Math.floor(Math.random() * 100) < o.baitlossodds) {
-													player.inven = player.inven.substring(0, k) + "Za00000000" + player.inven.substring(k + 10);
-													inv();
-													print += "pop=Lost Bait!\n";
-												}
-											}
-											if (o.odds) {
-												//catch fish
-												if (Math.floor(Math.random() * 100) < o.odds) {
-													if (f < 0) {
-														if (k < 0) return print += "pop=Full Inventory\n";
-														f = k;
-														print += "pop=Lost Bait!\n";
-													}
-													player.inven = player.inven.substring(0, f) + codetsz[3] + newstamp(codetsz[3]) + player.inven.substr(f + 10);
-													inv();
-													print += "pop=You catch a Fish!\n";
-												} else print += "pop=Nothing\n";
-											}
-										} else print += "pop=Need " + ({ Bj: "Net", Bk: "Pole" }[o.tool]) + "\n";
-									},
-									Zh: function () {
-										print += "pop=Enter City\n";
-									},
-									Zi: function () {
-										var f = player.inven.indexOf("Cg")
-										if (f >= 0) {
-											player.inven = player.inven.substring(0, f) + "Zj" + Server.percent0_x(8, cstamp.after(60)) + player.inven.substr(f + 10);
-											inv();
-											print += "dinv=1v\n";
-										}
-									},
-									Zj: function () {
-										print += "pop=Fire\n";
-									}
-								}[codetsz[0]] || nop)();
-							} else {
-								f = player.inven.indexOf("Za");
-								let estamp = Server.percent0_x(8, cstamp.after(parseInt("0x" + codetsz[1])));
-								player.inven = player.inven.substring(0, f) + codetsz[0] + estamp + player.inven.substr(f + 10);
-								inv();
-								print += "dinv=1v\n";
-							}
-						} else {
-							if (codetsz[0].substring(0, 3) === "NPC") {
-								//npc
-							} else {
-								({
-									TPORT: function () {
-										print += "pop=tport\n";
-										var mapz;
-										if (codetsz[3] && (mapz = codetsz[3].split("-")).length > 1) {
-											player.map = mapz[0];
-											player.z = mapz[1];
-											var ab = token();
-											print += "t0=" + world.loadmap(`${ab.a1}${ab.b1}`) + "\nt1=" + world.loadmap(`${ab.a1}${ab.b2}`) + "\nt2=" + world.loadmap(`${ab.a2}${ab.b1}`) + "\nt3=" + world.loadmap(`${ab.a2}${ab.b2}`) + "\nRMap=1\n";
-										} else if (player.name == codetsz[3]) {
-											if (player.tport1) {
-												print += "pop=linking this teleport to that teleport...\n";
-												var dest = player.tport1.split("-");
-												Cookie.set("st" + player.tmap, loadstatics(player.tmap) + "*TPORT 00000000 " + dest[1] + " " + player.tport1);
-												print += "pop=linking that teleport to this teleport...\n";
-												Cookie.set("st" + dest[0], loadstatics(dest[0]) + "*TPORT 00000000 " + dest[1] + " " + player.map + "-" + player.z);
-												player.tport1 = "";
-												print += "pop=teleport completed.\n";
-											} else {
-												player.tport1 = player.map + "-" + player.z;
-												print += "pop=add another teleport for destination\n";
-											}
-										} else {
-											print += "pop=player name does not matches\n";
-										}
-									},
-									WELL: function () {
-										let t = player.inven.indexOf("Bd");
-										if (t > -1) {
-											player.inven.chg("Bd", "Ei", t);
-											inv();
-											print += "dinv=1v\n";
-										}
-									},
-									FOUNTAIN: function () {
-										let t = player.inven.indexOf("Bd");
-										if (t > -1) {
-											player.inven.chg("Bd", "Ei", t);
-											inv();
-											print += "dinv=1v\n";
-										}
-									},
-									FARMHOUSE: function () {
-										let slot = player.inven.indexOf("Za");
-										if (player.inven.serializeItemIDs().match(/F[abcd]/) && slot > -1) {
-											player.inven.add(new Item("Fd", new Stamp(3600, cstamp)), slot);
-											inv();
-											print += "dinv=1v\n";
-										}
-									},
-									CLOTHES: function () { }//static-clothes.pl basically unimplemented
-								}[codetsz[0]] || function () {
-									print += "pop=invalid static object\n";
-								})();
-							}
-						}
-					}
-				}
+				let s = world.loadmap(player.tmap).getStaticAt(player.tz);
+				if (!s) return;
+				let p = s.activate(player, form, cstamp, world, (map: WorldCoord, z: number) => {
+					player.map = map;
+					player.z = z;
+					var ab = token();
+					print += "t0=" + world.loadmap(`${ab.a1}${ab.b1}`) + "\nt1=" + world.loadmap(`${ab.a1}${ab.b2}`) + "\nt2=" + world.loadmap(`${ab.a2}${ab.b1}`) + "\nt3=" + world.loadmap(`${ab.a2}${ab.b2}`) + "\nRMap=1\n";
+				});
+				if (p.match(/(^|\n)dinv=1v/)) inv();
+				print += p;
 				xf.refresh();
 			},
 			"delete": function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";//perl checked for Zc
 				print += "pop=delete\n";
-				let s = loadstatics(player.tmap).split("*");
-				for (let codetsz, i = 0; i < s.length; i++) {
-					codetsz = s[i].split(" ");
-					if (player.tz == codetsz[2]) {
-						//removed form.j check, so deletes all items on that location
-						s[i] = "";
-						print += "pop=" + codetsz[0] + " deleted\n";
-					}
-				}
-				Cookie.set("st" + player.tmap, s.join("*").replace(/^\*+/, "").replace(/\*+$/, "").replace(/\*\*+/g, "*"));
+				world.loadmap(player.tmap).rmStaticAt(player.tz);
 			},
 			add: function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";
 				let jdata = form.j.split("-"),
-					estamp = "00000000";
+					estamp = "0",
+					data = "";
 				if (jdata[0].length === 2) {
 					if (jdata[0].charAt(0) != "Z") {
-						estamp = Server.percent0_x(8, +jdata[1]);
-						jdata[1] = player.name;
+						estamp = jdata[1];
+						data = " " + player.name;
 					} else {
-						if (jdata[0] === "Zf") jdata[1] = form.j.substr(2).replace(/-/g, " ");
+						if (jdata[0] === "Zf") data = form.j.substring(2).replace(/-/g, " ");
 					}
 				} else {
 					if (form.j.substring(0, 3) === "NPC") {
@@ -871,19 +1014,9 @@ class Server {
 					}
 				}
 				if (jdata[0]) {
-					let s = loadstatics(player.tmap).split("*");
-					for (var codetsz, i = 0; i < s.length; i++) {
-						codetsz = s[i].split(" ");
-						if (player.tz == codetsz[2]) {
-							s[i] = "";
-							print += "pop=" + codetsz[0] + " deleted\n";
-							jdata[0] = "";
-						}
-					}
-					if (jdata[0]) {
-						s[s.length] = jdata[1];
-					}
-					Cookie.set("st" + player.tmap, s.join("*").replace(/^\*+/, "").replace(/\*+$/, "").replace(/\*\*+/g, "*"));
+					let tileset = world.loadmap(player.tmap);
+					if (tileset.hasStaticAt(player.tz)) tileset.rmStaticAt(player.tz);
+					else tileset.addStatic(Static.unserialize(jdata[0] + " " + estamp + " " + player.tz + data));
 				}
 				xf.refresh();
 			},
@@ -1116,8 +1249,8 @@ class Server {
 				i, s, t: Tileset = world.loadmap(player.tmap), z;
 			if (a1 < 'A' || a1 > world.EdgeY || b1 < '0' || (b1 > world.EdgeX && b1 < 'a')) print += "pop=Invalid map " + map + "\n";
 			else if (world.isCity(map)) {//city has 4 maps in one
-				t.serializeTokens(zconv,cstamp);
-				statics(map);
+				print += t.serializeTokens(zconv, cstamp) +
+					t.serializeStaticZ(s, zconv);
 				items(map);
 				if (player.ts.since(t.getStamp()) !== 0) {
 					token();
@@ -1133,9 +1266,9 @@ class Server {
 				let map: [WorldCoord, WorldCoord, WorldCoord, WorldCoord] = [`${a1}${b1}`, `${a1}${b2}`, `${a2}${b1}`, `${a2}${b2}`];
 				for (i = 0; i < 4; i = s) {
 					s = i + 1;
-					t.serializeTokens((n:number)=>[s,n],cstamp);
+					print += t.serializeTokens((n: number) => [s, n], cstamp) +
+						t.serializeStaticZ(s, zconv);
 					items(map[i], s);
-					statics(map[i], s);
 				}
 				if (player.ts.since(t.getStamp()) !== 0) {
 					token();
@@ -1199,24 +1332,9 @@ class Server {
 				}
 				for (i = 0; i < 4; i++)if (it[i] || !q) print += "i" + i + "=" + it[i] + "\n";
 			}
-			function statics(map: WorldCoord, q: 0 | 1 | 2 | 3 | 4 = 0) {
-				var s, i, t, z,
-					j = q - 1,
-					st = ["", "", "", ""];
-				//statics have default, but not generated
-				if (s = loadstatics(map)) for (s = s.split("*"), i = 0; i < s.length; i++) {
-					t = s[i].split(" ");
-					if (q) st[j] += t[0] + "=" + t[2];
-					else {
-						z = zconv(t[2]);
-						st[z[0]] += t[0] + "=" + z[1] + " ";
-					}
-				}
-				for (i = 0; i < 4; i++)if (st[i] || !q) print += "s" + i + "=" + st[i] + "\n";
-			}
 		}
 		function zconv(z: number): [1 | 2 | 3 | 4, number] {
-			var q = 1, y = Math.floor(z / MapWide), x = z - (y * MapWide);
+			let q = 1, y = Math.floor(z / MapWide), x = z - (y * MapWide);
 			if (y > MapSizeY) { q = 3; y -= MapSizeY1 }
 			if (x > MapSizeX) { q++; x -= MapSizeX1 }
 			return [q as 1 | 2 | 3 | 4, y * MapSizeX1 + x];
@@ -1228,7 +1346,7 @@ class Server {
 				b1: Digit = player.map.charAt(1) as Digit,
 				a2: UpperLetter = a1,
 				b2: Digit = b1;
-			if (b1 > world.EdgeX) {//city
+			if (world.isCity(player.map)) {
 				map = `${a1}${b1}`;
 				//this checks y, no need to check x
 				z = player.z < MapHigh * MapWide ? player.z : MapHigh * MapWide;
