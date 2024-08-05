@@ -585,6 +585,9 @@ class Tileset {
 		for (let i = 0; i < MapSizeX1 * MapSizeY1 * 4; i++)tileset += tiles[Math.floor(Math.random() * total)] || bg;//Ua for water
 		return tileset;
 	}
+	saveCookie(map: WorldCoord, withDynamics: boolean = false) {
+		Cookie.set("map" + map, this.serialize(withDynamics));
+	}
 }
 
 class World {
@@ -621,8 +624,8 @@ class World {
 		}
 		return m;
 	}
-	static saveCookie(map: WorldCoord, tileset: Tileset) {
-		Cookie.set("map" + map, tileset.serialize());
+	saveCookie(key: string, withDynamics: boolean = false) {
+		Cookie.set("world" + key, this.serialize(withDynamics));
 	}
 	isCity(map: WorldCoord): boolean { return map.charAt(0) > this.EdgeY || map.charAt(1) > this.EdgeX }
 	static null = new World();//typescript didn't like that world could be undefined, below
@@ -1109,7 +1112,7 @@ class Server {
 					z[0]--;
 					t.setTile(form.jid as Tile, z[1], z[0] as 0 | 1 | 2 | 3);
 				} else t.setTile(form.jid as Tile, player.tz);
-				if (player === this.player) World.saveCookie(player.tmap, t);
+				if (player === this.player) t.saveCookie(player.tmap);
 				if (oldstamp == cstamp) player.ts = Stamp._1;//speed up for 1player
 				refresh();
 			},
