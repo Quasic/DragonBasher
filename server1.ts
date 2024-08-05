@@ -908,18 +908,18 @@ class Server {
 					let g = tileset.getTileClass(player.tz);
 					if (g === "F" || g === "G") {
 						if (
-							(plant = {
+							(plant = ({
 								Fa: ["Ia", 60, "Za"],
 								Fb: ["Ia", 60, "Fa"],
 								Fc: ["Ia", 60, "Fd"],
 								Fd: ["Ia", 60, "Fc"]
-							}[form.jid]
+							} as { [K in ItemID]: [ItemID, number, ItemID] })[form.jid]
 							) && ("Za" === plant[2]
 								? player.inven.rm(form.jid).id === form.jid // use last seed
 								: player.inven.chg(form.jid, plant[2]) // reduce seed stack
 							) && player.inven.chg("Ei", "Bd") // water from bucket
 						) {
-							savedynamic(player.tmap, plant[0], new Stamp(plant[1], cstamp), player.tz);
+							tileset.getInv(player.tz).add(new Item(plant[0], new Stamp(plant[1], cstamp)));
 							inv();
 							print += "pop=Planted\n";
 						}
@@ -936,7 +936,7 @@ class Server {
 				) {
 					inv();
 					print += "dinv=1\n";
-					savedynamic(player.tmap, "Zj", cstamp.valueAfterMinutes(60), player.tz);
+					world.loadmap(player.tmap).getInv(player.tz).add(new Item("Zj", new Stamp(60, cstamp)));
 				}
 			},
 			wear: function () {
@@ -1321,7 +1321,8 @@ class Server {
 								if (Math.random() < .25) m[m.length] = tileup();
 								if (Math.random() < .25) m[m.length] = tiledown();
 								for (let j = 0; j < m.length; j++) {
-									if (world.loadmap(m[j].map).getInv(m[j].z).getLength() < 1) savedynamic(m[j].map, ("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, m[j].z);
+									let v = world.loadmap(m[j].map).getInv(m[j].z);
+									if (v.getLength() < 1) v.add(new Item(("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, new Stamp(60, cstamp)));
 								}
 								if (Math.random() < .5) xform = ["Ia", 60, null];
 								else if (Math.random() < .5) xform = [("F" + String.fromCharCode(Math.floor(Math.random() * 4) + 97)) as ItemID, 60, null];
@@ -1403,9 +1404,6 @@ class Server {
 		}
 		function newstamp(item) {
 			return new Stamp(Item.lifetime(item), cstamp);
-		}
-		function savedynamic(map: WorldCoord, item: ItemID, e: number | Stamp, tz: number) {
-			world.loadmap(map).getInv(tz).add(new Item(item, new Stamp(0, e)));
 		}
 		function hasFire() {
 			let tileinv = world.loadmap(player.tmap).getInv(player.tz);
