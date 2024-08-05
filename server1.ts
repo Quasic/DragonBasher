@@ -221,9 +221,21 @@ abstract class SpecialItem extends Static {
 	}
 	static unserialize(s: string) {
 		switch (s.substring(0, 2)) {
+			// Za is default
+			//Zb CursorX
+			//Zc Lock
+			//Zd Key
+			//Ze Teleport
 			case "Zf": return Sign.unserialize(s);
 			case "Zg": return Dock.unserialize(s);
 			case "Zh": return City.unserialize(s);
+			case "Zi": return FirePit.unserialize(s);
+			case "Zj": return Fire.unserialize(s);
+			//Zk MysteriousTrader
+			//Zl SpecialMountain
+			//Zm Blank?
+			//Zn GreenHealth
+			//Zo RedHealth
 			default: return NullStatic.unserialize(s);
 		}
 		assertUnreachable();
@@ -307,7 +319,7 @@ class City extends SpecialItem {
 	constructor(z: number, private map: WorldCoord, private mapz: number) {
 		super("Zh", z)
 	}
-	activate(player: Player, form: Form, cstamp: Stamp, world: World, tport): string {
+	activate(player: Player, form: Form, cstamp: Stamp, world: World, tport: (map: WorldCoord, z: number) => void): string {
 		if (!world.isCity(this.map)) return "pop=Not a City!";
 		tport(this.map, this.mapz);
 		return "pop=Enter City\n";
@@ -321,19 +333,34 @@ class City extends SpecialItem {
 		return NullStatic.unserialize(s);
 	}
 }
-/*More subclasses of SpecialItem to create and add to SpecialItem.unserialize switch
-									Zi: function () {
-										var f = player.inven.indexOf("Cg")
-										if (f >= 0) {
-											player.inven = player.inven.substring(0, f) + "Zj" + Server.percent0_x(8, cstamp.after(60)) + player.inven.substr(f + 10);
-											inv();
-											print += "dinv=1v\n";
-										}
-									},
-									Zj: function () {
-										print += "pop=Fire\n";
-									}
- */
+class FirePit extends SpecialItem {
+	activate(player: Player, form: Form, cstamp: Stamp, world: World, tport: (map: WorldCoord, z: number) => void): string {
+		return player.inven.rm("Cg", player.inven.indexOf("Cg"), new Item("Zj", new Stamp(60, cstamp))).id === "Cg" ? "dinv=1v\n" : "";
+	}
+	constructor(z: number) { super("Zi", z) }
+	serialize(): string {
+		return "Zi 0 " + this.z;
+	}
+	static unserialize(s: string): SpecialItem {
+		let a = s.split(" ");
+		if ("Zi" === a[0]) return new FirePit(+a[2]);
+		return NullStatic.unserialize(s);
+	}
+}
+class Fire extends SpecialItem {
+	activate(player: Player, form: Form, cstamp: Stamp, world: World, tport: (map: WorldCoord, z: number) => void): string {
+		return "pop=Fire\n";
+	}
+	constructor(z: number) { super("Zj", z) }
+	serialize(): string {
+		return "Zj 0 " + this.z;
+	}
+	static unserialize(s: string): SpecialItem {
+		let a = s.split(" ");
+		if ("Zj" === a[0]) return new Fire(+a[2]);
+		return NullStatic.unserialize(s);
+	}
+}
 class NPC extends Static {
 	constructor(public name: string, z: number) { super("NPC" + name, z) }
 	serialize(): string {
