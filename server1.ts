@@ -170,13 +170,28 @@ class Player {
 	}
 	one: Stamp = new Stamp(-99);
 	h: number = 60;
-	tmap: WorldCoord;
+	tmap: WorldCoord; // view
 	tz: number;
 	token: Token | null = null;
 	ts: Stamp = new Stamp(0, 0);
 	tport1: string = "";
 	remove(item: ItemID) {
 		this.object = this.object.replace(item, "");
+	}
+	serialize(NumInven: number): string {
+		return this.one + this.object + (this.h > 99 ? "99" : (this.h < 10 ? "0" : "") + this.h) + this.z + this.map + this.tmap + this.inven.serialize(NumInven);//._-*
+	}
+	static unserialize(name: string, s: string, NumInven: number = 24): Player {
+		let t = s.match(/^(0-9+)([FMn][0-9e][0-9w][A-Za-z]*)([0-9]{2})([0-9]+)([A-Z][^A-Z]){2}((!|[0-9]*)([A-Z][a-z][^A-Z]+)+)$/);//._-*
+		if (!t) return new Player("corrupt", "corrupt");
+		let player = new Player(name, t[2], t[5] as WorldCoord);
+		player.one = new Stamp(0, +t[1]);
+		player.h = +t[3];
+		player.z = +t[4];
+		player.tmap = t[6] as WorldCoord;
+		player.inven = Inv.unserialize(t[7], NumInven);
+		//player.token, player.ts, player.tz generated as needed
+		return player;
 	}
 }
 
@@ -648,7 +663,7 @@ class Server {
 			scrollpause = this.scrollpause,
 			NumInven = this.NumInven,
 			nop = () => { },
-			saveplayer = player !== this.player ? nop : () => Cookie.set("plyr" + this.player.name, this.player.one + this.player.object + (this.player.h > 99 ? "99" : (this.player.h < 10 ? "0" : "") + this.player.h) + this.player.z + this.player.map + this.player.tmap + this.player.inven.serialize(NumInven)),//._-*
+			saveplayer = player !== this.player ? nop : () => Cookie.set("plyr" + this.player.name, this.player.serialize(NumInven)),
 			//estamp=cstamp+60
 			form: Form = {
 				n: "",
@@ -747,27 +762,16 @@ class Server {
 			if (player === this.player) {
 				let s = Cookie.get("plyr" + form.n);
 				if (s) {
-					let t = s.match(/^(0-9+)([FMn][0-9e][0-9w][A-Za-z]*)([0-9]{2})([0-9]+)([A-Z][^A-Z]){2}((!|[0-9]*)([A-Z][a-z][^A-Z]+)+)$/);//._-*
-					if (!t) return q.error(form, cstamp.toString(), "Player file corrupt\n");
-					player.one = new Stamp(0, +t[1]);
-					player.object = t[2];
-					player.h = +t[3];
-					player.z = +t[4];
-					player.map = t[5] as WorldCoord;
-					player.tmap = t[6] as WorldCoord;
-					player.inven = Inv.unserialize(t[7], NumInven);
-					//player.token, player.ts, player.tz generated as needed
+					player = Player.unserialize(form.n, s, NumInven);
+					if (player.object === "corrupt") return q.error(form, cstamp.toString(), "Player file corrupt\n");
 				} else {
 					//reinitialize to new player, assuming old one logged out
+					player = new Player(form.n, "new", "B2", 88, new Inv([], NumInven));
 					player.one = new Stamp(60, cstamp)
-					player.object = "new";
-					player.h = 60;
-					player.z = player.tz = 88;
-					player.map = player.tmap = "B2";
-					player.inven = new Inv([], NumInven);
-					if (player === this.player) saveplayer();
 					print += "create=" + player.name + "\n";
 				}
+				this.player = player;
+				saveplayer();
 			} else return q.error(form, "!=", "player name mismatch: Player.name=" + Player.name + " but form.n=" + form.n);
 		}
 		xf = {
