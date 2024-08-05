@@ -539,7 +539,7 @@ class Tileset {
 		}
 		return r;
 	}
-	serialize(): string { return this.map + "*" + this.serializeStatics() + "*" + this.serializeDynamics() }
+	serialize(withDynamics: boolean = false): string { return this.map + "*" + this.serializeStatics() + "*" + (withDynamics ? this.serializeDynamics() : "") }
 	static unserialize(s: string): Tileset {
 		let m = s.match(/^([^*]*)\*(.*)\*([^*]*)$/);
 		if (m) return new Tileset(m[1], Tileset.unserializeStatics(m[1]), Tileset.unserializeDynamics(m[3]));
@@ -588,9 +588,9 @@ class World {
 	savemap(map: WorldCoord, tileset: Tileset) {
 		this.map.set(map, tileset);
 	}
-	serialize(): string {
+	serialize(withDynamics: boolean = false): string {
 		let r = "";
-		this.map.forEach((t, k) => { let s = t.serialize(); r += k + s.length.toString(36).toLowerCase() + s });
+		this.map.forEach((t, k) => { let s = t.serialize(withDynamics); r += k + s.length.toString(36).toLowerCase() + s });
 		return r;
 	}
 	static unserialize(s: string) {
