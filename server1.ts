@@ -1127,7 +1127,7 @@ class Server {
 				a1: UpperLetter = map.charAt(0) as UpperLetter, b1: Digit = map.charAt(1) as Digit, a2: UpperLetter = a1, b2: Digit = b1,
 				y = Math.floor(player.z / MapWide),
 				x = player.z - y * MapWide;
-			if (b1 > world.EdgeY) {
+			if (world.isCity(map)) {
 				if (x) x--;
 				else x = -1;
 			} else {
@@ -1150,7 +1150,7 @@ class Server {
 				a1: UpperLetter = map.charAt(0) as UpperLetter, b1: Digit = map.charAt(1) as Digit, a2: UpperLetter = a1, b2: Digit = b1,
 				y = Math.floor(player.z / MapWide),
 				x = player.z - y * MapWide;
-			if (b1 > world.EdgeY) {
+			if (world.isCity(map)) {
 				if (x < MapWide - 1) x++;
 				else x = -1;
 			} else {
@@ -1174,7 +1174,7 @@ class Server {
 				a1: UpperLetter = String.fromCharCode(map.charCodeAt(0) - 1) as UpperLetter, b1: Digit = map.charAt(1) as Digit, a2: UpperLetter = a1, b2: Digit = b1,
 				y = Math.floor(player.z / MapWide),
 				x = player.z - y * MapWide;
-			if (b1 > world.EdgeY) {
+			if (world.isCity(map)) {
 				if (y) y--;
 				else x = -1;
 			} else {
@@ -1195,7 +1195,7 @@ class Server {
 				a1: UpperLetter = String.fromCharCode(map.charCodeAt(0) + 1) as UpperLetter, b1: Digit = map.charAt(1) as Digit, a2: UpperLetter = a1, b2: Digit = b1,
 				y = Math.floor(player.z / MapWide),
 				x = player.z - y * MapWide;
-			if (b1 > world.EdgeY) {
+			if (world.isCity(map)) {
 				if (y < MapHigh - 1) y++;
 				else x = -1;
 			} else {
