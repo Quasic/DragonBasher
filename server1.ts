@@ -776,7 +776,7 @@ class Server {
 				print += "login=" + player.name + "\npop=Note: This is a single-server single-player demo version.<BR>Browser storage is used to hold map edits and player data, which may be cleared automatically.<BR>In addition to commands listed by the /help command, you may use the following hidden commands:<BR>/key makes you a sysop so you can use the rest of these commands<BR>/debug shows secret info about your character and items in the Notices tab<BR>/share shows map changes for sharing or saving outside of browser storage in the Notices tab<BR>/delete deletes all statics on your current tile<BR>/grass destroys your current area\n";
 			},
 			logout: function () {
-				detoken();
+				world.loadmap(player.tmap).detoken(player);
 				print += "logout=\n";
 			},
 			reset: function () {
@@ -1388,15 +1388,12 @@ class Server {
 				z = (y * MapSizeX1) + x;
 				if (window.console) console.log(cstamp, "token.noncity", map, x, y, z);
 			}
-			detoken();
+			world.loadmap(player.tmap).detoken(player);
 			player.tmap = map;
 			player.tz = z;
 			world.loadmap(map).retoken(player, TickObj)
 			if (window.console) console.log(cstamp, "token.out", player.token);
 			return { a1: a1, b1: b1, a2: a2, b2: b2 };
-		}
-		function detoken() {
-			world.loadmap(player.tmap).detoken(player);
 		}
 		function inv() {
 			print += "inv=" + player.inven.serializeItemIDs(NumInven) + "\n";
