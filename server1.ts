@@ -175,6 +175,9 @@ class Player {
 	token: Token | null = null;
 	ts: Stamp = new Stamp(0, 0);
 	tport1: string = "";
+	remove(item: ItemID) {
+		this.object = this.object.replace(item, "");
+	}
 }
 
 class Token {
@@ -956,7 +959,7 @@ class Server {
 				xf.refresh();
 			},
 			remove: function () {
-				remove();
+				player.remove(form.jid);
 				print += "dinv=1\n";
 				token();
 				xf.refresh();
@@ -998,8 +1001,7 @@ class Server {
 				world.loadmap(player.tmap).getInv(player.tz).add(item);
 				inv();
 				if (player.object.indexOf(item.id) >= 0) {
-					form.jid = item.id;
-					remove();
+					player.remove(item.id);
 				}
 				xf.refresh();
 			},
@@ -1125,8 +1127,7 @@ class Server {
 							print += "pop=^" + item + " expired\n";
 							player.inven.rm(item.id, i);
 							if (player.inven.indexOf(item.id) < 0) {
-								form.jid = item.id;
-								remove();
+								player.remove(item.id);
 							}
 						} else inv += item;
 					}
@@ -1400,9 +1401,6 @@ class Server {
 		}
 		function inv() {
 			print += "inv=" + player.inven.serializeItemIDs(NumInven) + "\n";
-		}
-		function remove() {
-			player.object = player.object.replace(form.jid, '');
 		}
 		function newstamp(item) {
 			return new Stamp(Item.lifetime(item), cstamp);
