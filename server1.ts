@@ -30,18 +30,22 @@ type WorldCoord = `${UpperLetter}${Digit | LowerLetter}`;
 type MoveData = { map: WorldCoord, x: number, y: number, z: number, a1: UpperLetter, b1: Digit, a2: UpperLetter, b2: Digit }; // Note: LowerLetter may show up in Digit place if not scrolling
 type Tile = `${UpperLetter}${LowerLetter}`;
 type TileFunction = () => Tile;
-type ItemID = `${UpperLetter}${LowerLetter}`; // In some places, the second character can also be Digit, but not everywhere.
+type ItemID = `${UpperLetter}${LowerLetter | Digit}`; // Some code may still have digit support removed. Only lower letters were used in 11-gfx.
 type Sex = "M" | "F"; // |"n";
 type Style = Digit;
 type Cloth = UpperLetter | LowerLetter | Digit;
 type Form = {
-	n: string,
-	c: string,
+	n: string, // UserName
+	c: string, // Command
 	d: `${Sex}${Style}${Cloth}` | "",
-	j: string,
+	jslot: number,
+	jid: ItemID, // may also be used for Tile
+	jz: number, // map z if jid used for Tile
+	jdata: string, // used for statics
+	jraw: string, // only if can't be split into above
 	k: ItemID,
-	m: string,
-	q: string
+	m: string, // Movement, should match /^[UDLR.]*$/ but extra characters are considered unknown movement (possibly for future use)
+	q: string // Chat string
 };
 
 class Stamp {
@@ -55,6 +59,7 @@ class Stamp {
 	isAfter(t: Stamp): boolean { return this.stamp > t.stamp }
 	since(t: Stamp): number { return this.stamp - t.stamp }
 	after(min: number) { return this.stamp + min }
+	minutesUntilStamp(stamp: Stamp) { return stamp.stamp - this.stamp }
 	minutesUntilStampValue(minutes: number) { return minutes - this.stamp }
 	toValue() { return this.stamp }
 	toString() { return "" + this.stamp }
@@ -619,7 +624,11 @@ class Server {
 				n: "",
 				c: "",
 				d: "",
-				j: "",
+				jslot: -1,
+				jid: "Za",
+				jz: -1,
+				jdata: "",
+				jraw: "",
 				k: "Za",
 				m: "",
 				q: ""
@@ -675,6 +684,14 @@ class Server {
 						allowed = decoded.match(/^[MF][0-9][A-Za-z0-9]$/) ? true : false;
 						break;
 					case "j":
+						let jm = decoded.match(/^(([0-9]+)-|)([A-Z][a-z0-9])(-([0-9]+)|)(-.+|)$/);
+						if (jm) {
+							if ("" != jm[1]) form.jslot = +jm[2];
+							form.jid = jm[3] as ItemID;
+							if ("" != jm[4]) form.jz = +jm[5];
+							if ("" != jm[6]) form.jdata = jm[6].substring(1);
+						} else form.jraw = decoded;
+						break;
 					case "m":
 					case "q":
 						allowed = true; // TODO: checked later, but should be checked here, instead?
@@ -750,16 +767,15 @@ class Server {
 			},
 			tele: function () {
 				print += "pop=tele\n";
-				let mapz = form.j.split("-");
-				if (mapz[0].match(/^[A-Z][0-9a-z]$/)) {
-					if (mapz.length < 2 || +mapz[1] < 1) mapz[1] = "" + (player.tz || 88);
-					player.map = mapz[0] as WorldCoord;
-					player.z = +mapz[1];
-					if (window.console) console.log(cstamp, "tele", mapz);
+				if (form.jid !== "Za") {
+					if (form.jz < 1) form.jz = (player.tz || 88);
+					player.map = form.jid;
+					player.z = form.jz;
+					if (window.console) console.log(cstamp, "tele", form);
 					token();
 					player.ts = Stamp._1;
 					refresh();
-				} else print += "pop=bad map code:" + mapz[0] + "\n";
+				} else print += "pop=bad map code" + form.jraw + "\n";
 			},
 			left: function () {
 				let t = tileleft();
@@ -815,24 +831,20 @@ class Server {
 				return !t.a1;
 			},
 			cook: function () {
-				let odds: [number, ItemID] = [0, "Za"],
-					slotitem = form.j.split("-"),
-					slot = +slotitem[0];
+				let odds: [number, ItemID] = [0, "Za"];
 				if (!hasFire()) return print += "pop=Need Fire!\n";
-				if (slot < NumInven && slotitem[1].length === 2 && player.inven.substr(slot * 10, 2) === slotitem[1]) {
+				if (form.jid !== "Za" && player.inven.getSlotItemID(form.jslot) === form.jid) {
 					odds = ({
 						Ga: [90, "Ja"],//minnows
 						Gd: [90, "Jd"],//crab
 						Ge: [90, "Je"]//carp
-					} as { [k: string]: [number, ItemID] })[slotitem[1]] || [0]
+					} as { [k: string]: [number, ItemID] })[form.jid] || [0]
 				}
 				if (odds[0]) {
-					slot *= 10;
-					print += "pop=slot " + slotitem[0] + " -> " + slot + "\n";
 					if (Math.floor(Math.random() * 100) < odds[0]) {
-						player.inven = player.inven.substring(0, slot) + odds[1] + newstamp(odds[1]) + player.inven.substr(slot + 10);
+						player.inven.rm(form.jid, form.jslot, new Item(odds[1], newstamp(odds[1])));
 					} else {
-						player.inven = player.inven.substring(0, slot) + "Za00000000" + player.inven.substr(slot + 10);
+						player.inven.rm(form.jid, form.jslot);
 						print += "pop=Burnt!\n";
 					}
 					inv();
@@ -840,11 +852,9 @@ class Server {
 				}
 			},
 			eat: function () {
-				let food,
-					slotitem = form.j.split("-"),
-					slot = +slotitem[0];
-				if (slot < NumInven && slotitem[1].length === 2) {
-					if (player.inven.substr(slot * 10, 2) === slotitem[1]) {
+				let food;
+				if ("Za" != form.jid && -1 < form.jslot && form.jslot < NumInven) {
+					if (player.inven.getSlotItemID(form.jslot) === form.jid) {
 						if (food = {
 							Fa: [4, "Za"],
 							Fb: [4, "Fa"],
@@ -853,9 +863,9 @@ class Server {
 							Ja: [1, "Za"],
 							Jd: [4, "Za"],
 							Je: [8, "Za"]
-						}[slotitem[1]]) {
-							slot *= 10;
-							player.inven = player.inven.substring(0, slot) + food[1] + ("Za" === food[1] ? "00000000" : player.inven.substr(slot + 2, 8)) + player.inven.substr(slot + 10);
+						}[form.jid]) {
+							if ("Za" === food[1]) player.inven.rm(form.jid, form.jslot);
+							else player.inven.chg(form.jid, food[1], form.jslot);
 							inv();
 							player.h = Math.max(player.h + food[0], 99);
 							print += "h=" + player.h + "\ndinv=1\n";
@@ -866,10 +876,8 @@ class Server {
 			plant: function () {
 				if (player.inven.indexOf("Ei") < 0) return print += "pop=Need Water!\n";
 				let tileset = world.loadmap(player.tmap),
-					plant: [ItemID, number, ItemID],
-					slotitem = form.j.split("-"),
-					slot = +slotitem[0];
-				if (slot < NumInven && slotitem[1].length === 2 && player.inven.getSlotItemID(slot) === slotitem[1]) {
+					plant: [ItemID, number, ItemID];
+				if (form.jid !== "Za" && player.inven.getSlotItemID(form.jslot) === form.jid) {
 					let g = tileset.getTileClass(player.tz);
 					if (g === "F" || g === "G") {
 						if (
@@ -878,10 +886,10 @@ class Server {
 								Fb: ["Ia", 60, "Fa"],
 								Fc: ["Ia", 60, "Fd"],
 								Fd: ["Ia", 60, "Fc"]
-							}[slotitem[1]]
+							}[form.jid]
 							) && ("Za" === plant[2]
-								? player.inven.rm(slotitem[1]).id === slotitem[1] // use last seed
-								: player.inven.chg(slotitem[1], plant[2]) // reduce seed stack
+								? player.inven.rm(form.jid).id === form.jid // use last seed
+								: player.inven.chg(form.jid, plant[2]) // reduce seed stack
 							) && player.inven.chg("Ei", "Bd") // water from bucket
 						) {
 							savedynamic(player.tmap, plant[0], new Stamp(plant[1], cstamp), player.tz);
@@ -893,29 +901,25 @@ class Server {
 			},
 			match: function () {
 				print += "pop=light match\n";
-				let slotitem = form.j.split("-"),
-					slot = +slotitem[0];
-				if (slot < NumInven && slotitem[1].length === 2 && player.inven.substr(slot *= 10, 2) === slotitem[1]) {
-					if (slotitem[1] === "Dj") player.inven = player.inven.substring(0, slot) + "Za00000000" + player.inven.substr(slot + 10);
-					else if (slotitem[1] === "Dk") player.inven = player.inven.substring(0, slot) + "Dj" + player.inven.substr(slot + 2);
-					else if (slotitem[1] === "Dl") player.inven = player.inven.substring(0, slot) + "Dk" + player.inven.substr(slot + 2);
-					else return;
+				if ("Za" === form.jid) return;
+				if (
+					(form.jid === "Dj" && player.inven.rm("Dj", form.jslot).id === "Dj")
+					|| (form.jid === "Dk" && player.inven.chg("Dk", "Dj", form.jslot))
+					|| (form.jid === "Dl" && player.inven.chg("Dl", "Dk", form.jslot))
+				) {
 					inv();
 					print += "dinv=1\n";
 					savedynamic(player.tmap, "Zj", cstamp.after(60), player.tz);
 				}
 			},
 			wear: function () {
-				if (form.j.length !== 2) return;
-				var Wearing = player.object.substr(4),
-					Class = form.j.charAt(0).replace(/[^A-Z]/g, ""),
-					type = form.j.charAt(1).replace(/[^0-9a-z]/g, "");
+				var Wearing = player.object.substring(4),
+					Class = form.jid.charAt(0) as UpperLetter,
+					type = form.jid.charAt(1) as LowerLetter | Digit;
 				if (player.inven.indexOf(`${Class}${type}`) >= 0) {
-					if ("" !== type) {
 						if ("LMS".indexOf(Class) >= 0) {
 							Wearing.replace(/[LMS]./g, "");
 							Wearing += Class + type;
-						}
 					}
 					if (player.object.length < 4) player.object += Math.random() < .5 ? "L" : "R"; // in case still new
 					player.object = player.object.substring(0, 4) + Wearing;
@@ -931,23 +935,22 @@ class Server {
 				xf.refresh();
 			},
 			exam: function () {
-				print += "pop=examine " + form.j + "\n";
-				var slotitem = form.j.split("-"),
-					slot = +slotitem[0],
-					invitem = player.inven.substr(slot * 10, 2),
-					invstamp = cstamp.minutesUntilStampValue(parseInt(player.inven.substr(slot * 10 + 2, 8), 16));
-				if (invitem === slotitem[1]) {
-					print += "pop=^" + slotitem[1] + " expires in " + (invstamp > 86400 ? Math.floor(invstamp / 86400) + " days" : invstamp > 3600 ? Math.floor(invstamp / 3600) + " hours" : invstamp > 60 ? Math.floor(invstamp / 60) + " minutes" : invstamp + " seconds") + "\n";
+				print += "pop=examine " + form.jid + "\n";
+				let invitem = player.inven.examine(form.jid, form.jslot),
+					invstamp = cstamp.minutesUntilStamp(invitem.expireStamp);
+				if (invitem.id === form.jid) {
+					print += "pop=^" + form.jid + " expires in " + (invstamp > 86400 ? Math.floor(invstamp / 86400) + " days" : invstamp > 3600 ? Math.floor(invstamp / 3600) + " hours" : invstamp > 60 ? Math.floor(invstamp / 60) + " minutes" : invstamp + " seconds") + "\n";
 				}
 			},
 			get: function () {
+				if ("Za" === form.jid) return xf.static();
 				let d = world.loadmap(player.tmap).getInv(player.tz),
-					i = d.indexOf(form.j);
+					i = d.indexOf(form.jid);
 				if (i > -1) {
 					var f = player.inven.indexOf("Za");
 					if (f > -1) {
-						let j = d.rm(form.j, i);
-						if (form.j.charAt(0) === "F") {
+						let j = d.rm(form.jid, i);
+						if (form.jid.charAt(0) === "F") {
 							// convert food timestamp from seconds to minutes
 							j.expireStamp = new Stamp(Math.min(j.expireStamp.since(cstamp), 60) * 60, cstamp);
 						}
@@ -960,16 +963,15 @@ class Server {
 				}
 			},
 			drop: function () {
-				let slotitem = form.j.split("-"),
-					slot = +slotitem[0] * 10,
-					item = player.inven.rm(slotitem[1], slot);
+				if (form.jslot < 0) return;
+				let item = player.inven.rm(form.jid, form.jslot);
 				if (item.id.charAt(0) == "F") {
 					item.expireStamp = new Stamp(Math.min(item.expireStamp.since(cstamp) / 60, 60), cstamp);
 				}
 				world.loadmap(player.tmap).getInv(player.tz).add(item);
 				inv();
 				if (player.object.indexOf(item.id) >= 0) {
-					form.j = item.id;
+					form.jid = item.id;
 					remove();
 				}
 				xf.refresh();
@@ -994,50 +996,40 @@ class Server {
 			},
 			add: function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";
-				let jdata = form.j.split("-"),
-					estamp = "0",
-					data = "";
-				if (jdata[0].length === 2) {
-					if (jdata[0].charAt(0) != "Z") {
-						estamp = jdata[1];
+				let estamp = "0",
+					data = "",
+					id = "";
+				if ("Za" != form.jid) {
+					id = form.jid;
+					if (form.jid.charAt(0) != "Z") {
+						estamp = "" + form.jz;
 						data = " " + player.name;
 					} else {
-						if (jdata[0] === "Zf") data = form.j.substring(2).replace(/-/g, " ");
+						if (form.jid === "Zf") data = form.jdata.substring(2).replace(/-/g, " ");
 					}
 				} else {
-					if (form.j.substring(0, 3) === "NPC") {
+					if (form.jraw.substring(0, 3) === "NPC") {
 						//npc
 					} else {
-						if (jdata[0]) {
+						if (form.jraw) {
 							//building
 						}
 					}
 				}
-				if (jdata[0]) {
+				if (id) {
 					let tileset = world.loadmap(player.tmap);
 					if (tileset.hasStaticAt(player.tz)) tileset.rmStaticAt(player.tz);
-					else tileset.addStatic(Static.unserialize(jdata[0] + " " + estamp + " " + player.tz + data));
+					else tileset.addStatic(Static.unserialize(id + " " + estamp + " " + player.tz + data));
 				}
 				xf.refresh();
 			},
 			inventory: function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";
-				let f: number,
-					J: string[] = form.j.split("-"),
-					j: [number, string, string];
-				if (J[0].match(/^[A-Z][0-9a-z]$/)) {
-					f = player.inven.indexOf("Za");
-					j = [f, J[0], J[1]];
-				} else {
-					j = [+J[0], J[1], J[2]];
-					f = +j[0];
-				}
-				print += "pop=/newitem " + j[0] + " " + j[1] + " " + j[2] + "\n";
-				if (j[1].match(/^[A-Z][a-z]$/)) {
-					if (player.inven.add(new Item(j[1] as ItemID, new Stamp(+j[2], cstamp)), f)) {
+				if (form.jid !== "Za") {
+					if (player.inven.add(new Item(form.jid, new Stamp(form.jz < 0 ? 60 : form.jz, cstamp)), form.jslot < 0 ? player.inven.indexOf("Za") : form.jslot)) {
 						inv();
 						print += "dinv=1\n";
-					} else print += "pop=no space " + f + "\n";
+					} else print += "pop=no space\n";
 				} else print += "pop=mismatch\n";
 			},
 			chat: function () {
@@ -1072,7 +1064,7 @@ class Server {
 			},
 			tile: function () {
 				if (player.inven.indexOf("Zd") < 0) return print += "pop=Need Sysop Key\n";
-				if (!form.j.match(/^[A-Z][a-z]$/)) return print += "pop=" + form.j + " is not a recognized tile\n";
+				if (!form.jid.match(/^[A-Z][a-z]$/)) return print += "pop=" + form.jid + " is not a recognized tile\n";
 				let t = world.loadmap(player.tmap),
 					isCity = world.isCity(player.tmap),
 					oldstamp = t.getStamp();
@@ -1080,8 +1072,8 @@ class Server {
 				if (isCity) {
 					var z = zconv(player.z);
 					z[0]--;
-					t.setTile(form.j as Tile, z[1], z[0] as 0 | 1 | 2 | 3);
-				} else t.setTile(form.j as Tile, player.tz);
+					t.setTile(form.jid as Tile, z[1], z[0] as 0 | 1 | 2 | 3);
+				} else t.setTile(form.jid as Tile, player.tz);
 				if (player === this.player) World.saveCookie(player.tmap, t);
 				if (oldstamp == cstamp) player.ts = Stamp._1;//speed up for 1player
 				refresh();
@@ -1106,7 +1098,7 @@ class Server {
 							print += "pop=^" + item + " expired\n";
 							player.inven.rm(item.id, i);
 							if (player.inven.indexOf(item.id) < 0) {
-								form.j = item.id;
+								form.jid = item.id;
 								remove();
 							}
 						} else inv += item;
@@ -1383,7 +1375,7 @@ class Server {
 			print += "inv=" + player.inven.serializeItemIDs(NumInven) + "\n";
 		}
 		function remove() {
-			player.object = player.object.replace(form.j, '');
+			player.object = player.object.replace(form.jid, '');
 		}
 		function newstamp(item) {
 			return new Stamp(Item.lifetime(item), cstamp);
@@ -1396,7 +1388,8 @@ class Server {
 			if (tileinv.indexOf("Zj") > -1) return true;
 			let p;
 			if ((p = player.inven.indexOf("Zj")) >= 0) {
-				form.j = p / 10 + "-Zj"
+				form.jslot = p;
+				form.jid = "Zj";
 				xf.drop();
 				return true;
 			} else if ((p = player.inven.indexOf("Dj")) >= 0) {
