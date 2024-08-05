@@ -1348,7 +1348,9 @@ class Server {
 						j = z[0];
 						i = z[1];
 					}
-					for (let item: Item, slot = 0; slot < NumInven; slot++)if ((item = inv.getSlotItem(slot)).id !== "Za") it[j] += item.id + Server.percent0_x(2, i);
+					for (let item: Item, len = inv.getLength(), slot = 0; slot < len; slot++)if ((item = inv.getSlotItem(slot)).id !== "Za") {
+						it[j] += item.id + (i < 16 ? "0" : "") + Number(i & 255).toString(16);
+					}
 				}
 				for (i = 0; i < 4; i++)if (it[i] || !q) print += "i" + i + "=" + it[i] + "\n";
 			}
@@ -1429,8 +1431,5 @@ class Server {
 			}
 			return false;
 		}
-	}
-	static percent0_x(digitCount: number, n: number) {
-		return ("00000000" + Number(n).toString(16)).substr(-digitCount);
 	}
 }
