@@ -65,7 +65,7 @@ class Stamp {
 	toString() { return "" + this.stamp }
 	serialize(): string { return Infinity === this.stamp ? "!" : Number(this.stamp).toString(36).toLowerCase() } //Must be no upper case, but no longer have specific width requirement of DragonBasher database (Server.percent0_x)
 	static unserialize(s: string): Stamp { let t = "!" === s ? Infinity : parseInt(s, 36); return new Stamp(0, isNaN(t) ? 0 : t) }
-	static _1 = new Stamp(-1, 0);
+	static _1 = new Stamp(1, 0);
 }
 
 class Item {
@@ -173,7 +173,7 @@ class Player {
 	tmap: WorldCoord; // view
 	tz: number;
 	token: Token | null = null;
-	ts: Stamp = new Stamp(0, 0);
+	ts: Stamp = Stamp._1;
 	tport1: string = "";
 	remove(item: ItemID) {
 		this.object = this.object.replace(item, "");
@@ -394,6 +394,8 @@ class NPC extends Static {
 	}
 }
 /* Building subclasses of Static to create and add to Static.unserialize switch
+							// Teleport is also a SpecialItem, but potentially with different behaviour
+							// If the teleport already has a location, should it overwrite or insert into a loop?
 									TPORT: function () {
 										print += "pop=tport\n";
 										var mapz;
