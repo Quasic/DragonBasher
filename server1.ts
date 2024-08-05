@@ -57,8 +57,8 @@ class Stamp {
 		this.stamp = Math.max(1, t); // must be positive
 	}
 	isAfter(t: Stamp): boolean { return this.stamp > t.stamp }
-	since(t: Stamp): number { return this.stamp - t.stamp }
-	after(min: number) { return this.stamp + min }
+	minutesSinceStamp(t: Stamp): number { return this.stamp - t.stamp }
+	valueAfterMinutes(min: number) { return this.stamp + min }
 	minutesUntilStamp(stamp: Stamp) { return stamp.stamp - this.stamp }
 	minutesUntilStampValue(minutes: number) { return minutes - this.stamp }
 	toValue() { return this.stamp }
@@ -909,7 +909,7 @@ class Server {
 				) {
 					inv();
 					print += "dinv=1\n";
-					savedynamic(player.tmap, "Zj", cstamp.after(60), player.tz);
+					savedynamic(player.tmap, "Zj", cstamp.valueAfterMinutes(60), player.tz);
 				}
 			},
 			wear: function () {
@@ -952,7 +952,7 @@ class Server {
 						let j = d.rm(form.jid, i);
 						if (form.jid.charAt(0) === "F") {
 							// convert food timestamp from seconds to minutes
-							j.expireStamp = new Stamp(Math.min(j.expireStamp.since(cstamp), 60) * 60, cstamp);
+							j.expireStamp = new Stamp(Math.min(j.expireStamp.minutesSinceStamp(cstamp), 60) * 60, cstamp);
 						}
 						player.inven.add(j, f);
 						inv();
@@ -966,7 +966,7 @@ class Server {
 				if (form.jslot < 0) return;
 				let item = player.inven.rm(form.jid, form.jslot);
 				if (item.id.charAt(0) == "F") {
-					item.expireStamp = new Stamp(Math.min(item.expireStamp.since(cstamp) / 60, 60), cstamp);
+					item.expireStamp = new Stamp(Math.min(item.expireStamp.minutesSinceStamp(cstamp) / 60, 60), cstamp);
 				}
 				world.loadmap(player.tmap).getInv(player.tz).add(item);
 				inv();
@@ -1244,7 +1244,7 @@ class Server {
 				print += t.serializeTokens(zconv, cstamp) +
 					t.serializeStaticZ(s, zconv);
 				items(map);
-				if (player.ts.since(t.getStamp()) !== 0) {
+				if (player.ts.minutesSinceStamp(t.getStamp()) !== 0) {
 					token();
 					print += t.serializeQuarters() + "RMap=1\n";
 					player.ts = new Stamp(0, t.getStamp());
@@ -1262,7 +1262,7 @@ class Server {
 						t.serializeStaticZ(s, zconv);
 					items(map[i], s);
 				}
-				if (player.ts.since(t.getStamp()) !== 0) {
+				if (player.ts.minutesSinceStamp(t.getStamp()) !== 0) {
 					token();
 					for (i = 0; i < 4; i++)print += "t" + i + "=" + world.loadmap(map[i]) + "\n";
 					print += "RMap=1\n";
