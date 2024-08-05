@@ -125,7 +125,7 @@ class Inv {
 	}
 	chg(from: ItemID, to: ItemID, slot: number = this.indexOf(from)): boolean {
 		if (slot < 0 || slot >= this.max || slot >= this.inv.length || !(this.inv[slot] instanceof Item) || this.inv[slot].id !== from) return false;
-		this.inv[slot] = new Item(to, this.inv[slot].expireStamp);
+		this.inv[slot].id = to;
 		return true;
 	}
 	static unserialize(s: string, fallbackmax: number = 24): Inv {
